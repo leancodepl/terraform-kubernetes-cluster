@@ -1,0 +1,84 @@
+resource "azurerm_kubernetes_cluster" "cluster" {
+  name                = "${var.prefix}-k8s-cluster"
+  resource_group_name = azurerm_resource_group.cluster.name
+  location            = azurerm_resource_group.cluster.location
+
+  dns_prefix         = var.prefix
+  kubernetes_version = var.cluster_config.version
+
+  default_node_pool {
+    name = "default"
+
+    vm_size             = var.cluster_config.default_pool.vm_size
+    os_disk_size_gb     = var.cluster_config.default_pool.os_disk_size_gb
+    max_pods            = var.cluster_config.default_pool.max_pods
+    enable_auto_scaling = var.cluster_config.default_pool.enable_auto_scaling
+
+    min_count  = var.cluster_config.default_pool.enable_auto_scaling ? var.cluster_config.default_pool.min_count : null
+    max_count  = var.cluster_config.default_pool.enable_auto_scaling ? var.cluster_config.default_pool.max_count : null
+    node_count = var.cluster_config.default_pool.enable_auto_scaling ? null : var.cluster_config.default_pool.count
+
+    vnet_subnet_id = azurerm_subnet.node_pool.id
+
+    node_taints = var.cluster_config.default_pool.node_taints
+
+    type = "VirtualMachineScaleSets"
+  }
+
+  service_principal {
+    client_id     = azuread_service_principal.service.application_id
+    client_secret = random_string.service_secret.result
+  }
+
+  role_based_access_control {
+    enabled = true
+
+    azure_active_directory {
+      client_app_id     = azuread_application.client.application_id
+      server_app_id     = azuread_application.server.application_id
+      server_app_secret = random_string.server_secret.result
+    }
+  }
+
+  network_profile {
+    network_plugin    = "azure"
+    load_balancer_sku = var.cluster_config.loadbalancer
+
+    # Totally outside the 10.X.X.X that we use internally
+    docker_bridge_cidr = "172.17.0.1/16"
+    service_cidr       = "10.255.0.0/16"
+    dns_service_ip     = "10.255.0.10"
+  }
+
+  api_server_authorized_ip_ranges = var.cluster_config.access.authorized_ip_ranges
+
+  tags = local.tags
+
+  depends_on = [
+    azuread_service_principal_password.server_secret,
+    azuread_service_principal_password.service_secret,
+    azuread_service_principal.client,
+    azurerm_role_assignment.service_contributor
+  ]
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "node_pools" {
+  for_each = var.cluster_config.additional_pools
+
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
+
+  name            = each.key
+  vm_size         = each.value.vm_size
+  os_disk_size_gb = each.value.os_disk_size_gb
+  max_pods        = each.value.max_pods
+
+  node_taints         = each.value.node_taints
+  enable_auto_scaling = each.value.enable_auto_scaling
+
+  min_count  = each.value.enable_auto_scaling ? each.value.min_count : null
+  max_count  = each.value.enable_auto_scaling ? each.value.max_count : null
+  node_count = each.value.enable_auto_scaling ? null : each.value.count
+
+  os_type        = "Linux"
+  vnet_subnet_id = azurerm_subnet.node_pool.id
+}
