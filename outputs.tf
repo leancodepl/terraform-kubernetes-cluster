@@ -23,6 +23,7 @@ output "cluster_service_user" {
 
 output "cluster" {
   value = {
+    id                = azurerm_kubernetes_cluster.cluster.id
     kubeconfig        = azurerm_kubernetes_cluster.cluster.kube_config_raw
     kube_admin_config = azurerm_kubernetes_cluster.cluster.kube_admin_config.0
   }
