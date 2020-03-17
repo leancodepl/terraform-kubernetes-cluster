@@ -4,6 +4,7 @@ output "cluster_server_user" {
     service_principal_id  = azuread_service_principal.server.id
     service_principal_key = random_string.server_secret.result
   }
+  sensitive = true
 }
 
 output "cluster_client_user" {
@@ -11,6 +12,7 @@ output "cluster_client_user" {
     application_id       = azuread_application.client.application_id
     service_principal_id = azuread_service_principal.client.id
   }
+  sensitive = true
 }
 
 output "cluster_service_user" {
@@ -19,14 +21,18 @@ output "cluster_service_user" {
     service_principal_id  = azuread_service_principal.service.id
     service_principal_key = random_string.service_secret.result
   }
+  sensitive = true
 }
 
 output "cluster" {
   value = {
-    id                = azurerm_kubernetes_cluster.cluster.id
     kubeconfig        = azurerm_kubernetes_cluster.cluster.kube_config_raw
     kube_admin_config = azurerm_kubernetes_cluster.cluster.kube_admin_config.0
   }
+}
+
+output "cluster_id" {
+  value = azurerm_kubernetes_cluster.cluster.id
 }
 
 output "domain" {
