@@ -28,6 +28,10 @@ output "cluster" {
   value = {
     kubeconfig        = azurerm_kubernetes_cluster.cluster.kube_config_raw
     kube_admin_config = azurerm_kubernetes_cluster.cluster.kube_admin_config.0
+
+    id                  = azurerm_kubernetes_cluster.cluster.id
+    name                = azurerm_kubernetes_cluster.cluster.name
+    resource_group_name = azurerm_kubernetes_cluster.cluster.resource_group_name
   }
 }
 
@@ -37,6 +41,8 @@ output "cluster_id" {
 
 output "domain" {
   value = {
+    zone_id      = azurerm_dns_zone.cluster_domain.id
+    zone_name    = azurerm_dns_zone.cluster_domain.name
     name_servers = azurerm_dns_zone.cluster_domain.name_servers
   }
 }
