@@ -43,6 +43,7 @@ output "domain" {
 
 output "networking" {
   value = {
-    vnet_id = azurerm_virtual_network.cluster.id
+    vnet_id             = azurerm_virtual_network.cluster.id
+    vnet_pool_subnet_id = azurerm_subnet.node_pool.id
   }
 }
