@@ -1,3 +1,7 @@
+provider "azurerm" {
+  features {}
+}
+
 locals {
   tags = merge(var.tags, {
     cluster_name = var.prefix
