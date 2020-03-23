@@ -54,16 +54,6 @@ variable "cluster_config" {
       enable_auto_scaling = bool,
       node_taints         = list(string)
     }),
-    additional_pools = map(object({
-      vm_size             = string,
-      os_disk_size_gb     = string,
-      max_pods            = number,
-      count               = number,
-      min_count           = number,
-      max_count           = number,
-      enable_auto_scaling = bool,
-      node_taints         = list(string)
-    })),
     access = object({
       admin_access_group   = string,
       dev_access_group     = string,

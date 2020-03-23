@@ -61,24 +61,3 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     azurerm_role_assignment.service_contributor
   ]
 }
-
-resource "azurerm_kubernetes_cluster_node_pool" "node_pools" {
-  for_each = var.cluster_config.additional_pools
-
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.cluster.id
-
-  name            = each.key
-  vm_size         = each.value.vm_size
-  os_disk_size_gb = each.value.os_disk_size_gb
-  max_pods        = each.value.max_pods
-
-  node_taints         = each.value.node_taints
-  enable_auto_scaling = each.value.enable_auto_scaling
-
-  min_count  = each.value.enable_auto_scaling ? each.value.min_count : null
-  max_count  = each.value.enable_auto_scaling ? each.value.max_count : null
-  node_count = each.value.enable_auto_scaling ? null : each.value.count
-
-  os_type        = "Linux"
-  vnet_subnet_id = azurerm_subnet.node_pool.id
-}
