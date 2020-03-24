@@ -85,7 +85,7 @@ resource "kubernetes_persistent_volume_claim" "traefik_acme" {
 }
 
 resource "azurerm_public_ip" "traefik_public_ip" {
-  name                = "traefik-public-ip"
+  name                = "${var.prefix}-traefik-public-ip"
   resource_group_name = azurerm_resource_group.cluster.name
   location            = azurerm_resource_group.cluster.location
 
@@ -100,6 +100,10 @@ resource "kubernetes_service" "traefik_loadbalancer" {
     name      = "traefik-ingress-lb"
     namespace = "kube-system"
     labels    = local.traefik_tags
+
+    annotations = {
+      "service.beta.kubernetes.io/azure-load-balancer-resource-group" = azurerm_resource_group.cluster.name
+    }
   }
 
   spec {
