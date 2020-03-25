@@ -119,7 +119,6 @@ resource "kubernetes_deployment" "external_dns" {
           args = [
             "--source=service",
             "--source=ingress",
-            "--domain-filter=${var.domain}",
             "--provider=azure",
             "--registry=txt",
             "--txt-owner-id=external-dns-${var.prefix}-k8s",
