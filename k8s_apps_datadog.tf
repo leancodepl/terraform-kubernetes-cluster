@@ -49,11 +49,11 @@ resource "kubernetes_cluster_role" "datadog_agent" {
   }
   rule {
     api_groups = [""]
-    resources  = ["nodes/metrics", "nodes/spec", "nodes/proxy"]
+    resources  = ["nodes/metrics", "nodes/spec", "nodes/proxy", "nodes/stats"]
     verbs      = ["get"]
   }
   rule {
-    non_resource_urls = ["/version", "/healthz"]
+    non_resource_urls = ["/version", "/healthz", "/metrics"]
     verbs             = ["get"]
   }
 }
@@ -146,9 +146,21 @@ resource "kubernetes_daemonset" "datadog_agent" {
           }
         }
         volume {
-          name = "pointerdir"
+          name = "pointdir"
           host_path {
             path = "/opt/datadog-agent/run"
+          }
+        }
+        volume {
+          name = "logpodpath"
+          host_path {
+            path = "/var/log/pods"
+          }
+        }
+        volume {
+          name = "logcontainerpath"
+          host_path {
+            path = "/var/lib/docker/containers"
           }
         }
 
@@ -183,7 +195,7 @@ resource "kubernetes_daemonset" "datadog_agent" {
 
           volume_mount {
             name       = "dockersocket"
-            mount_path = "/var/run/docker.sock"
+            mount_path = "/host/var/run/docker.sock"
           }
           volume_mount {
             name       = "procdir"
@@ -196,8 +208,16 @@ resource "kubernetes_daemonset" "datadog_agent" {
             read_only  = true
           }
           volume_mount {
-            name       = "pointerdir"
+            name       = "pointdir"
             mount_path = "/opt/datadog-agent/run"
+          }
+          volume_mount {
+            name       = "logpodpath"
+            mount_path = "/var/log/pods"
+          }
+          volume_mount {
+            name       = "logcontainerpath"
+            mount_path = "/var/lib/docker/containers"
           }
 
           liveness_probe {
