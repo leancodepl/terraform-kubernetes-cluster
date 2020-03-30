@@ -131,42 +131,36 @@ resource "kubernetes_daemonset" "datadog_agent" {
           name = "dockersocket"
           host_path {
             path = "/var/run/docker.sock"
-            type = "File"
           }
         }
         volume {
           name = "procdir"
           host_path {
             path = "/proc"
-            type = "Directory"
           }
         }
         volume {
           name = "cgroups"
           host_path {
             path = "/sys/fs/cgroup"
-            type = "Directory"
           }
         }
         volume {
           name = "pointdir"
           host_path {
             path = "/opt/datadog-agent/run"
-            type = "DirectoryOrCreate"
           }
         }
         volume {
           name = "logpodpath"
           host_path {
             path = "/var/log/pods"
-            type = "Directory"
           }
         }
         volume {
           name = "logcontainerpath"
           host_path {
             path = "/var/lib/docker/containers"
-            type = "Directory"
           }
         }
 
