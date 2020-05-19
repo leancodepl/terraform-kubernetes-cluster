@@ -75,7 +75,7 @@ resource "kubernetes_persistent_volume_claim" "traefik_acme" {
 
   spec {
     access_modes       = ["ReadWriteMany"]
-    storage_class_name = "traefik-acme"
+    storage_class_name = kubernetes_storage_class.traefik_acme.metadata[0].name
     resources {
       requests = {
         storage = "1Gi"
