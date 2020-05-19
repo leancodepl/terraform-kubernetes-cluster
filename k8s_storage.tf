@@ -3,8 +3,9 @@ resource "kubernetes_storage_class" "traefik_acme" {
   metadata {
     name = "traefik-acme"
   }
-  storage_provisioner = "kubernetes.io/azure-file"
-  mount_options       = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
+  storage_provisioner    = "kubernetes.io/azure-file"
+  mount_options          = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
+  allow_volume_expansion = false
   parameters = {
     skuName = "Standard_LRS"
   }
