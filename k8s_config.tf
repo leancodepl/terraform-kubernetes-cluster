@@ -1,8 +1,6 @@
 data "azurerm_client_config" "current" {}
 
 provider "kubernetes" {
-  version = ">= 1.11.2"
-
   host                   = azurerm_kubernetes_cluster.cluster.kube_admin_config.0.host
   username               = azurerm_kubernetes_cluster.cluster.kube_admin_config.0.username
   password               = azurerm_kubernetes_cluster.cluster.kube_admin_config.0.password
