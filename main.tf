@@ -1,7 +1,3 @@
-provider "azurerm" {
-  features {}
-}
-
 terraform {
   required_providers {
     azuread    = ">= 0.9"
@@ -9,6 +5,10 @@ terraform {
     kubernetes = ">= 1.11.2"
     random     = ">= 2.2"
   }
+}
+
+provider "azurerm" {
+  features {}
 }
 
 locals {
