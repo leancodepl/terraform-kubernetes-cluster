@@ -166,4 +166,10 @@ resource "kubernetes_deployment" "external_dns" {
       }
     }
   }
+
+  # HACK: fix for upgrade from old K8s provider to the new one
+  # Should be phased out before the PR
+  lifecycle {
+    ignore_changes = [spec[0].template[0].metadata[0].namespace]
+  }
 }
