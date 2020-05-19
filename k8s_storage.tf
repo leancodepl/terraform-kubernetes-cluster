@@ -1,11 +1,12 @@
+# We use it for Traefik ACME storage only and it shouldn't be used elsewhere.
 resource "kubernetes_storage_class" "traefik_acme" {
   metadata {
     name = "traefik-acme"
   }
   storage_provisioner = "kubernetes.io/azure-file"
-  mount_options       = ["dir_mode=0777", "file_mode=0777", "uid=1000", "gid=1000"]
+  mount_options       = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
   parameters = {
-    sku_name = "Standard_LRS"
+    skuName = "Standard_LRS"
   }
 }
 
