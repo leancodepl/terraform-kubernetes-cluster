@@ -1,30 +1,15 @@
-# Not yet supported by kubernetes provider :(
-# resource "kubernetes_storage_class" "azure_file" {
-#   metadata {
-#     name = "azurefile"
-#   }
-#   storage_provisioner = "kubernetes.io/azure-file"
-#   mount_options = {
-#     dir_mode = "0777"
-#     file_mode = "0777"
-#     uid = "1000"
-#     gid = "1000"
-#   }
-#   parameters = {
-#     sku_name = "Standard_LRS"
-#   }
-# }
-
-# resource "kubernetes_cluster_role" "azure_cloud_provider" {
-#   metadata {
-#     name = "system:azure-cloud-provider"
-#   }
-#   rule {
-#     api_groups = [""]
-#     resources  = ["events"]
-#     verbs      = ["create", "patch", "update"]
-#   }
-# }
+# We use it for Traefik ACME storage only and it shouldn't be used elsewhere.
+resource "kubernetes_storage_class" "traefik_acme" {
+  metadata {
+    name = "traefik-acme"
+  }
+  storage_provisioner    = "kubernetes.io/azure-file"
+  mount_options          = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
+  allow_volume_expansion = false
+  parameters = {
+    skuName = "Standard_LRS"
+  }
+}
 
 resource "kubernetes_cluster_role_binding" "azure_cloud_provider" {
   metadata {

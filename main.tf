@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azuread    = ">= 0.9"
+    azurerm    = ">= 2.8.0"
+    kubernetes = ">= 1.11.2"
+    random     = ">= 2.2"
+  }
+}
+
 provider "azurerm" {
   features {}
 }

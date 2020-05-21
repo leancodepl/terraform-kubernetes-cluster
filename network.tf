@@ -13,7 +13,7 @@ resource "azurerm_subnet" "node_pool" {
   resource_group_name  = azurerm_resource_group.cluster.name
   virtual_network_name = azurerm_virtual_network.cluster.name
 
-  address_prefix    = cidrsubnet(var.address_space, var.node_pool_network_size, 0)
+  address_prefixes  = [cidrsubnet(var.address_space, var.node_pool_network_size, 0)]
   service_endpoints = ["Microsoft.KeyVault", "Microsoft.Sql"]
 }
 
