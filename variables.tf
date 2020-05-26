@@ -80,8 +80,20 @@ variable "traefik" {
   description = "Traefik configuration"
   type = object({
     config_file_name = string
+    resources = object({
+      limits = object({
+        cpu    = string,
+        memory = string,
+      })
+    })
   })
   default = {
     config_file_name = "traefik.toml"
+    resources = {
+      limits = {
+        cpu    = "100m"
+        memory = "50m"
+      }
+    }
   }
 }
