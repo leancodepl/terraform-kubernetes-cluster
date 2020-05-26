@@ -187,11 +187,11 @@ resource "kubernetes_daemonset" "traefik" {
           resources {
             requests {
               cpu    = "100m"
-              memory = "20Mi"
+              memory = "50Mi"
             }
             limits {
-              cpu    = "100m"
-              memory = "50Mi"
+              cpu    = var.traefik.resources.limits.cpu
+              memory = var.traefik.resources.limits.memory
             }
           }
 
