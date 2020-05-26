@@ -92,7 +92,7 @@ variable "traefik" {
     resources = {
       limits = {
         cpu    = "100m"
-        memory = "50m"
+        memory = "50Mi"
       }
     }
   }
