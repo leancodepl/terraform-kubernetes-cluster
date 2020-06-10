@@ -39,6 +39,18 @@ variable "tags" {
   type        = map
 }
 
+variable "ad_config" {
+  description = "AD configuration"
+  type = object({
+    server_secret_end_date  = string,
+    service_secret_end_date = string,
+  })
+  default = {
+    server_secret_end_date  = "2020-06-10T12:00:00Z",
+    service_secret_end_date = "2020-06-10T12:00:00Z",
+  }
+}
+
 variable "cluster_config" {
   description = "Configuration of the cluster"
   type = object({
