@@ -1,7 +1,3 @@
-locals {
-  secrets_end_date = "2020-06-10T12:00:00Z"
-}
-
 # Server app
 resource "azuread_application" "server" {
   name            = "${var.name_prefix} AKS Server"
@@ -41,14 +37,14 @@ resource "random_string" "server_secret" {
 
   keepers = {
     app_id   = azuread_application.server.application_id
-    end_date = local.secrets_end_date
+    end_date = var.ad_config.server_secret_end_date
   }
 }
 
 resource "azuread_service_principal_password" "server_secret" {
   service_principal_id = azuread_service_principal.server.id
   value                = random_string.server_secret.result
-  end_date             = local.secrets_end_date
+  end_date             = var.ad_config.server_secret_end_date
 }
 
 # Client app
@@ -101,14 +97,14 @@ resource "random_string" "service_secret" {
 
   keepers = {
     app_id   = azuread_application.service.application_id
-    end_date = local.secrets_end_date
+    end_date = var.ad_config.service_secret_end_date
   }
 }
 
 resource "azuread_service_principal_password" "service_secret" {
   service_principal_id = azuread_service_principal.service.id
   value                = random_string.service_secret.result
-  end_date             = local.secrets_end_date
+  end_date             = var.ad_config.service_secret_end_date
 }
 
 resource "azurerm_role_assignment" "service_contributor" {
