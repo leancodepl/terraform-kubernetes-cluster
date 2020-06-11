@@ -46,8 +46,8 @@ variable "ad_config" {
     service_secret_end_date = string,
   })
   default = {
-    server_secret_end_date  = "2020-06-10T12:00:00Z",
-    service_secret_end_date = "2020-06-10T12:00:00Z",
+    server_secret_end_date  = "2022-06-10T12:00:00Z",
+    service_secret_end_date = "2022-06-10T12:00:00Z",
   }
 }
 
