@@ -91,7 +91,7 @@ variable "peered_network" {
 variable "traefik" {
   description = "Traefik configuration"
   type = object({
-    config_file_name = string
+    config_file = string
     resources = object({
       limits = object({
         cpu    = string,
@@ -100,7 +100,7 @@ variable "traefik" {
     })
   })
   default = {
-    config_file_name = "traefik.toml"
+    config_file = "traefik.toml"
     resources = {
       limits = {
         cpu    = "100m"
