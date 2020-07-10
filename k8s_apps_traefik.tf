@@ -62,7 +62,7 @@ resource "kubernetes_config_map" "traefik_config" {
   }
 
   data = {
-    "traefik.toml" = file("${path.module}/cfg/${var.traefik.config_file_name}")
+    "traefik.toml" = file(fileexists(var.traefik.config_file) ? var.traefik.config_file : "${path.module}/cfg/${var.traefik.config_file}")
   }
 }
 
