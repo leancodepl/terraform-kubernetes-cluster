@@ -84,7 +84,7 @@ variable "datadog" {
 
 variable "datadog_additional_config" {
   description = "Additional config files placed in Datadog's conf.d folder"
-  type        = map(string)
+  type        = map(map(string))
   default     = {}
 }
 

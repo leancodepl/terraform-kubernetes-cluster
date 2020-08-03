@@ -89,14 +89,16 @@ resource "kubernetes_secret" "datadog_secret" {
 }
 
 resource "kubernetes_secret" "datadog_additional_config" {
+  for_each = var.datadog_additional_config
+
   metadata {
-    name      = "datadog-additional-config"
+    name      = "datadog-additional-${replace(each.key, ".", "-")}-secret"
     namespace = "kube-system"
     labels    = local.datadog_agent_tags
   }
 
   type = "Opaque"
-  data = var.datadog_additional_config
+  data = each.value
 }
 
 resource "kubernetes_daemonset" "datadog_agent" {
@@ -174,15 +176,18 @@ resource "kubernetes_daemonset" "datadog_agent" {
             path = "/var/lib/docker/containers"
           }
         }
-        volume {
-          name = "additionalconfig"
-          secret {
-            secret_name = kubernetes_secret.datadog_additional_config.metadata[0].name
-            dynamic "items" {
-              for_each = var.datadog_additional_config
-              content {
-                key  = items.key
-                path = replace(items.key, "--", "/")
+        dynamic "volume" {
+          for_each = var.datadog_additional_config
+          content {
+            name = "additionalconfig${replace(volume.key, ".", "-")}"
+            secret {
+              secret_name = kubernetes_secret.datadog_additional_config[volume.key].metadata[0].name
+              dynamic "items" {
+                for_each = volume.value
+                content {
+                  key  = items.key
+                  path = items.key
+                }
               }
             }
           }
@@ -243,10 +248,13 @@ resource "kubernetes_daemonset" "datadog_agent" {
             name       = "logcontainerpath"
             mount_path = "/var/lib/docker/containers"
           }
-          volume_mount {
-            name       = "additionalconfig"
-            mount_path = "/etc/datadog-agent/conf.d"
-            read_only  = true
+          dynamic "volume_mount" {
+            for_each = var.datadog_additional_config
+            content {
+              name       = "additionalconfig${replace(volume_mount.key, ".", "-")}"
+              mount_path = "/etc/datadog-agent/conf.d/${volume_mount.key}"
+              read_only  = true
+            }
           }
 
           liveness_probe {
