@@ -178,6 +178,13 @@ resource "kubernetes_daemonset" "datadog_agent" {
           name = "additionalconfig"
           secret {
             secret_name = kubernetes_secret.datadog_additional_config.metadata[0].name
+            dynamic "items" {
+              for_each = var.datadog_additional_config
+              content {
+                key  = items.key
+                path = replace(items.key, "--", "/")
+              }
+            }
           }
         }
 
@@ -239,6 +246,7 @@ resource "kubernetes_daemonset" "datadog_agent" {
           volume_mount {
             name       = "additionalconfig"
             mount_path = "/conf.d"
+            read_only  = true
           }
 
           liveness_probe {
