@@ -245,7 +245,7 @@ resource "kubernetes_daemonset" "datadog_agent" {
           }
           volume_mount {
             name       = "additionalconfig"
-            mount_path = "/conf.d"
+            mount_path = "/etc/datadog-agent/conf.d"
             read_only  = true
           }
 
