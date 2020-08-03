@@ -82,6 +82,12 @@ variable "datadog" {
   })
 }
 
+variable "datadog_additional_config" {
+  description = "Additional config files placed in Datadog's conf.d folder"
+  type        = map(string)
+  default     = {}
+}
+
 variable "peered_network" {
   description = "The id of the network that the cluster network will peer to"
   default     = ""

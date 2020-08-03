@@ -88,6 +88,17 @@ resource "kubernetes_secret" "datadog_secret" {
   }
 }
 
+resource "kubernetes_secret" "datadog_additional_config" {
+  metadata {
+    name      = "datadog-additional-config"
+    namespace = "kube-system"
+    labels    = local.datadog_agent_tags
+  }
+
+  type = "Opaque"
+  data = var.datadog_additional_config
+}
+
 resource "kubernetes_daemonset" "datadog_agent" {
   metadata {
     name      = "datadog-agent"
@@ -163,6 +174,12 @@ resource "kubernetes_daemonset" "datadog_agent" {
             path = "/var/lib/docker/containers"
           }
         }
+        volume {
+          name = "additionalconfig"
+          secret {
+            secret_name = kubernetes_secret.datadog_additional_config.metadata[0].name
+          }
+        }
 
         container {
           name              = "agent"
@@ -218,6 +235,10 @@ resource "kubernetes_daemonset" "datadog_agent" {
           volume_mount {
             name       = "logcontainerpath"
             mount_path = "/var/lib/docker/containers"
+          }
+          volume_mount {
+            name       = "additionalconfig"
+            mount_path = "/conf.d"
           }
 
           liveness_probe {
