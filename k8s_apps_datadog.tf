@@ -102,6 +102,8 @@ resource "kubernetes_secret" "datadog_additional_config" {
 }
 
 resource "kubernetes_daemonset" "datadog_agent" {
+  count = var.datadog.secret == "" ? 0 : 1
+
   metadata {
     name      = "datadog-agent"
     namespace = "kube-system"
