@@ -22,7 +22,7 @@ resource "kubernetes_cluster_role" "external_dns" {
   }
   rule {
     api_groups = [""]
-    resources  = ["services", "pods"]
+    resources  = ["services", "pods", "endpoints"]
     verbs      = ["get", "watch", "list"]
   }
   rule {
@@ -114,7 +114,7 @@ resource "kubernetes_deployment" "external_dns" {
 
         container {
           name  = "externa-dns"
-          image = "registry.opensource.zalan.do/teapot/external-dns:latest"
+          image = "eu.gcr.io/k8s-artifacts-prod/external-dns/external-dns:v0.7.3"
 
           args = [
             "--source=service",

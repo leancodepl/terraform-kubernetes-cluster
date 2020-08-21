@@ -197,7 +197,7 @@ resource "kubernetes_daemonset" "datadog_agent" {
 
         container {
           name              = "agent"
-          image             = "datadog/agent:latest"
+          image             = "datadog/agent:7"
           image_pull_policy = "Always"
 
           port {
