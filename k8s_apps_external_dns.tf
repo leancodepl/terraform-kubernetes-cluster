@@ -22,7 +22,7 @@ resource "kubernetes_cluster_role" "external_dns" {
   }
   rule {
     api_groups = [""]
-    resources  = ["services", "pods"]
+    resources  = ["services", "pods", "endpoints"]
     verbs      = ["get", "watch", "list"]
   }
   rule {
