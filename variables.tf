@@ -115,3 +115,8 @@ variable "traefik" {
     }
   }
 }
+
+variable "deploy_aad_pod_identity" {
+  type    = bool
+  default = false
+}
