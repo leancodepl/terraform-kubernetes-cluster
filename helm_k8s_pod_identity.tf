@@ -1,5 +1,5 @@
 resource "helm_release" "aad_pod_identity" {
-  count = var.deploy_add_pod_identity ? 1 : 0
+  count = var.deploy_aad_pod_identity ? 1 : 0
 
   name       = "aad-pod-identity"
   repository = "https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
