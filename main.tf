@@ -4,7 +4,7 @@ terraform {
     azurerm    = ">= 2.8.0"
     kubernetes = ">= 1.11.2"
     random     = ">= 2.2"
-    helm       = ">= 1.2.4"
+    helm       = ">= 1.3.0"
   }
 }
 

@@ -1,6 +1,4 @@
 provider "helm" {
-  version = "1.2.4"
-
   kubernetes {
     host                   = azurerm_kubernetes_cluster.cluster.kube_admin_config.0.host
     client_certificate     = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config.0.client_certificate)
