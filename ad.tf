@@ -32,7 +32,7 @@ resource "azuread_service_principal" "server" {
   application_id = azuread_application.server.application_id
 }
 
-resource "random_string" "server_secret" {
+resource "random_password" "server_secret" {
   length = 64
 
   keepers = {
@@ -43,7 +43,7 @@ resource "random_string" "server_secret" {
 
 resource "azuread_service_principal_password" "server_secret" {
   service_principal_id = azuread_service_principal.server.id
-  value                = random_string.server_secret.result
+  value                = random_password.server_secret.result
   end_date             = var.ad_config.server_secret_end_date
 }
 
@@ -92,7 +92,7 @@ resource "azuread_service_principal" "service" {
   application_id = azuread_application.service.application_id
 }
 
-resource "random_string" "service_secret" {
+resource "random_password" "service_secret" {
   length = 64
 
   keepers = {
@@ -103,7 +103,7 @@ resource "random_string" "service_secret" {
 
 resource "azuread_service_principal_password" "service_secret" {
   service_principal_id = azuread_service_principal.service.id
-  value                = random_string.service_secret.result
+  value                = random_password.service_secret.result
   end_date             = var.ad_config.service_secret_end_date
 }
 

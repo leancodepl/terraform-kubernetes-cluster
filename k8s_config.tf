@@ -21,7 +21,7 @@ resource "kubernetes_manifest" "service_account_secret" {
       tenant_id       = data.azurerm_client_config.current.tenant_id
 
       client_id     = azuread_service_principal.service.application_id
-      client_secret = random_string.service_secret.result
+      client_secret = random_password.service_secret.result
 
       resource_group = azurerm_resource_group.cluster.name
     }
