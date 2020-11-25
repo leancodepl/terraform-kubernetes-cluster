@@ -14,7 +14,7 @@ resource "helm_release" "aad_pod_identity" {
   chart      = "aad-pod-identity"
   version    = "2.0.3"
 
-  namespace = kubernetes.kubernetes_namespace.aad_pod_identity[0].metadata[0].name
+  namespace = kubernetes_namespace.aad_pod_identity[0].metadata[0].name
 
   set {
     name  = "mic.tag"
