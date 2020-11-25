@@ -91,22 +91,12 @@ variable "datadog" {
 variable "traefik" {
   description = "Traefik configuration"
   type = object({
-    config_file = string
-    resources = object({
-      limits = object({
-        cpu    = string,
-        memory = string,
-      })
-    })
+    config_file = string,
+    config      = map(any),
   })
   default = {
-    config_file = "traefik.toml"
-    resources = {
-      limits = {
-        cpu    = "100m"
-        memory = "50Mi"
-      }
-    }
+    config_file = file("${path.module}/cfg/traefik.toml")
+    config      = {}
   }
 }
 
@@ -131,5 +121,4 @@ variable "aad_pod_identity" {
       })
     })
   })
-
 }
