@@ -122,3 +122,9 @@ variable "aad_pod_identity" {
     })
   })
 }
+
+variable "deploy_external_dns" {
+  description = "Whether to deploy External DNS"
+  type        = bool
+  default     = true
+}
