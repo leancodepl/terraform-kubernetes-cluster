@@ -1,34 +1,7 @@
-logLevel = "INFO"
-defaultEntryPoints = ["http", "https"]
-[entryPoints]
-    [entryPoints.http]
-    address = ":80"
-    compress = true
-    [entryPoints.http.redirect]
-        regex = "^http://(.*)"
-        replacement = "https://$1"
-    [entryPoints.https]
-    address = ":443"
-    compress = true
-    [entryPoints.https.tls]
-    [entryPoints.traefik]
-    address = ":8080"
-[kubernetes]
-    labelselector = "tier != internal"
-[kubernetes.ingressEndpoint]
-    publishedService = "kube-system/traefik-ingress-lb"
-[acme]
+[certificatesResolvers.leresolver.acme]
     email = "jakub.fijalkowski@leancode.pl"
-    storage = "/acme/acme.json"
-    entryPoint = "https"
-    onHostRule = true
     logging = true
-[acme.dnsChallenge]
-    provider = "azure"
-    resolvers = ["1.1.1.1:53", "8.8.8.8:53"]
-[api]
-    dashboard = false
-    debug = false
+    [certificatesResolvers.leresolver.acme.tlsChallenge]
 [metrics]
     [metrics.datadog]
         addEntryPointsLabels = true
@@ -38,6 +11,3 @@ defaultEntryPoints = ["http", "https"]
     serviceName = "traefik"
     spanNameLimit = 100
     [tracing.datadog]
-        traceIDHeaderName = "x-datadog-trace-id"
-        parentIDHeaderName = "x-datadog-parent-id"
-        globalTag = "env:test"

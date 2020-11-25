@@ -59,7 +59,7 @@ resource "helm_release" "traefik" {
   set {
     name = "additionalArguments"
     value = [
-      "--configfile=/config/traefik.toml",
+      "--configFile=/config/traefik.toml",
       "--certificatesresolvers.leresolver.acme.storage=/data/acme.json"
     ]
   }
