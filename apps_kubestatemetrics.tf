@@ -1,8 +1,12 @@
-resource "kubernetes_namespace" "kube_state_metrics" {
+resource "kubernetes_manifest" "kube_state_metrics_ns" {
   count = var.deploy_kube_state_metrics ? 1 : 0
 
-  metadata {
-    name = "kube-state-metrics"
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "kube-state-metrics"
+    }
   }
 }
 
@@ -14,7 +18,7 @@ resource "helm_release" "kube_state_metrics" {
   chart      = "kube-state-metrics"
   version    = "1.0.0"
 
-  namespace = kubernetes_namespace.kube_state_metrics[0].metadata[0].name
+  namespace = kubernetes_manifest.kube_state_metrics_ns[0].object.metadata.name
 
   set {
     name = "resources"

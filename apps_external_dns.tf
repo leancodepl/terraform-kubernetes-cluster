@@ -1,8 +1,12 @@
-resource "kubernetes_namespace" "external_dns" {
+resource "kubernetes_manifest" "external_dns_ns" {
   count = var.deploy_external_dns ? 1 : 0
 
-  metadata {
-    name = "external-dns"
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "external-dns"
+    }
   }
 }
 
@@ -14,7 +18,7 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   version    = "4.0.0"
 
-  namespace = kubernetes_namespace.external_dns[0].metadata[0].name
+  namespace = kubernetes_manifest.external_dns_ns.object.metadata.name
 
   set {
     name = "resources"

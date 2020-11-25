@@ -1,8 +1,12 @@
-resource "kubernetes_namespace" "aad_pod_identity" {
+resource "kubernetes_manifest" "aad_pod_identity_ns" {
   count = var.deploy_aad_pod_identity ? 1 : 0
 
-  metadata {
-    name = "aad-pod-identity"
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "aad-pod-identity"
+    }
   }
 }
 
@@ -14,7 +18,7 @@ resource "helm_release" "aad_pod_identity" {
   chart      = "aad-pod-identity"
   version    = "2.0.3"
 
-  namespace = kubernetes_namespace.aad_pod_identity[0].metadata[0].name
+  namespace = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
 
   set {
     name  = "mic.tag"

@@ -2,9 +2,13 @@ locals {
   datadog_excluded_fields = ["datadog.apiKey", "datadog.kubeStateMetricsEnabled"]
 }
 
-resource "kubernetes_namespace" "datadog" {
-  metadata {
-    name = "datadog"
+resource "kubernetes_manifest" "datadog_ns" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "datadog"
+    }
   }
 }
 
@@ -15,7 +19,7 @@ resource "helm_release" "datadog_agent" {
   chart      = "datadog"
   version    = "2.6.0"
 
-  namespace = kubernetes_namespace.datadog.metadata[0].name
+  namespace = kubernetes_manifest.datadog_ns.object.metadata.name
 
   set {
     name  = "datadog.apiKey"

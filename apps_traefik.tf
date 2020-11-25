@@ -6,21 +6,29 @@ locals {
   }
 }
 
-resource "kubernetes_namespace" "traefik" {
-  metadata {
-    name = "traefik"
+resource "kubernetes_manifest" "traefik_ns" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "Namespace"
+    metadata = {
+      name = "traefik"
+    }
   }
 }
 
-resource "kubernetes_config_map" "traefik_config" {
-  metadata {
-    name      = "traefik-ingress-config"
-    namespace = kubernetes_namespace.traefik.metadata[0].name
-    labels    = local.traefik_tags
-  }
+resource "kubernetes_manifest" "traefik_configmap" {
+  manifest = {
+    apiVersion = "v1"
+    kind       = "ConfigMap"
+    metadata = {
+      name      = "traefik-ingress-config"
+      namespace = kubernetes_manifest.traefik_ns.object.metadata.name
+      labels    = local.traefik_tags
+    }
 
-  data = {
-    "traefik.toml" = var.traefik.config_file
+    data = {
+      "traefik.toml" = var.traefik.config_file
+    }
   }
 }
 
@@ -54,7 +62,7 @@ resource "helm_release" "traefik" {
   chart      = "traefik"
   version    = "9.9.0"
 
-  namespace = kubernetes_namespace.traefik.metadata[0].name
+  namespace = kubernetes_manifest.traefik_ns.object.metadata.name
 
   set {
     name = "additionalArguments"
@@ -90,7 +98,7 @@ resource "helm_release" "traefik" {
     value = [
       {
         type      = "configMap"
-        name      = kubernetes_config_map.kubernetes_config_map.traefik_config.metadata[0].name
+        name      = kubernetes_manifest.traefik_configmap.object.metadata.name
         mountPath = "/config"
       }
     ]
