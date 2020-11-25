@@ -128,3 +128,9 @@ variable "deploy_external_dns" {
   type        = bool
   default     = true
 }
+
+variable "deploy_kube_state_metrics" {
+  description = "Whether to deploy kube-state-metrics"
+  type        = bool
+  default     = true
+}
