@@ -74,24 +74,18 @@ variable "cluster_config" {
   })
 }
 
-variable "datadog" {
-  description = "DataDog configuration"
-  type = object({
-    secret = string,
-    config = map(string)
-  })
-}
-
-variable "datadog_additional_config" {
-  description = "Additional config files placed in Datadog's conf.d folder"
-  type        = map(map(string))
-  default     = {}
-}
-
 variable "peered_network" {
   description = "The id of the network that the cluster network will peer to"
   default     = ""
   type        = string
+}
+
+variable "datadog" {
+  description = "DataDog configuration"
+  type = object({
+    secret = string,
+    config = map(any)
+  })
 }
 
 variable "traefik" {
