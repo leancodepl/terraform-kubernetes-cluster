@@ -120,3 +120,22 @@ variable "deploy_aad_pod_identity" {
   type    = bool
   default = false
 }
+
+variable "aad_pod_identity" {
+  description = "AAD Pod Identity configuration"
+  type = object({
+    mic = object({
+      resources = object({
+        cpu    = string,
+        memory = string,
+      })
+    }),
+    nmi = object({
+      resources = object({
+        cpu    = string,
+        memory = string,
+      })
+    })
+  })
+
+}
