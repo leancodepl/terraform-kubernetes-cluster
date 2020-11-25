@@ -25,6 +25,7 @@ output "cluster_service_user" {
 }
 
 output "cluster" {
+  sensitive = true
   value = {
     kubeconfig        = azurerm_kubernetes_cluster.cluster.kube_config_raw
     kube_admin_config = azurerm_kubernetes_cluster.cluster.kube_admin_config.0

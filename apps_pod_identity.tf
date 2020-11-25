@@ -1,3 +1,7 @@
+locals {
+  aad_pod_identity_excluded_fields = []
+}
+
 resource "kubernetes_manifest" "aad_pod_identity_ns" {
   count = var.deploy_aad_pod_identity ? 1 : 0
 
@@ -24,49 +28,72 @@ resource "helm_release" "aad_pod_identity" {
     name  = "mic.tag"
     value = "1.7.0"
   }
-
   set {
     name  = "nmi.tag"
     value = "1.7.0"
   }
-
   set {
     name  = "mic.loggingFormat"
     value = "json"
   }
-
   set {
     name  = "mic.leaderElection.namespace"
-    value = kubernetes.kubernetes_namespace.aad_pod_identity.metadata[0].name
+    value = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
   }
-
-  set {
-    name  = "mic.resources"
-    value = var.aad_pod_identity.mic.resources
-  }
-
   set {
     name  = "nmi.micNamespace"
-    value = kubernetes.kubernetes_namespace.aad_pod_identity.metadata[0].name
+    value = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
   }
-
-  set {
-    name  = "nmi.resources"
-    value = var.aad_pod_identity.nmi.resources
-  }
-
   set {
     name  = "installCRDs"
     value = true
   }
-
   set {
     name  = "rbac.allowAccessToSecrets"
     value = false
   }
-
   set {
     name  = "forceNameSpaced"
     value = true
+  }
+  set {
+    name  = "mic.resources.requests.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "mic.resources.requests.memory"
+    value = "256Mi"
+  }
+  set {
+    name  = "mic.resources.limits.cpu"
+    value = "500m"
+  }
+  set {
+    name  = "mic.resources.limits.memory"
+    value = "512Mi"
+  }
+  set {
+    name  = "nmi.resources.requests.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "nmi.resources.requests.memory"
+    value = "256Mi"
+  }
+  set {
+    name  = "nmi.resources.limits.cpu"
+    value = "500m"
+  }
+  set {
+    name  = "nmi.resources.limits.memory"
+    value = "512Mi"
+  }
+
+  dynamic "set" {
+    for_each = { for k, v in var.aad_pod_identity.config : k => v if ! contains(local.aad_pod_identity_excluded_fields, k) }
+    content {
+      name  = set.key
+      value = set.value
+    }
   }
 }

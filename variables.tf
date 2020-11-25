@@ -95,7 +95,7 @@ variable "traefik" {
     config      = map(any),
   })
   default = {
-    config_file = file("${path.module}/cfg/traefik.toml")
+    config_file = ""
     config      = {}
   }
 }
@@ -108,19 +108,11 @@ variable "deploy_aad_pod_identity" {
 variable "aad_pod_identity" {
   description = "AAD Pod Identity configuration"
   type = object({
-    mic = object({
-      resources = object({
-        cpu    = string,
-        memory = string,
-      })
-    }),
-    nmi = object({
-      resources = object({
-        cpu    = string,
-        memory = string,
-      })
-    })
+    config = map(any),
   })
+  default = {
+    config = {}
+  }
 }
 
 variable "deploy_external_dns" {

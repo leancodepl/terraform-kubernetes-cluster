@@ -27,20 +27,24 @@ resource "kubernetes_manifest" "traefik_configmap" {
     }
 
     data = {
-      "traefik.toml" = var.traefik.config_file
+      "traefik.toml" = var.traefik.config_file == "" ? file("${path.module}/cfg/traefik.toml") : var.traefik.config_file
     }
   }
 }
 
-resource "kubernetes_storage_class" "traefik_acme" {
-  metadata {
-    name = "traefik-acme"
-  }
-  storage_provisioner    = "kubernetes.io/azure-file"
-  mount_options          = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
-  allow_volume_expansion = false
-  parameters = {
-    skuName = "Standard_LRS"
+resource "kubernetes_manifest" "traefik_acme_storageclass" {
+  manifest = {
+    apiVersion = "storage.k8s.io/v1"
+    kind       = "StorageClass"
+    metadata = {
+      name = "traefik-acme"
+    }
+    storage_provisioner    = "kubernetes.io/azure-file"
+    mount_options          = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
+    allow_volume_expansion = false
+    parameters = {
+      skuName = "Standard_LRS"
+    }
   }
 }
 
@@ -65,21 +69,20 @@ resource "helm_release" "traefik" {
   namespace = kubernetes_manifest.traefik_ns.object.metadata.name
 
   set {
-    name = "additionalArguments"
-    value = [
-      "--configFile=/config/traefik.toml",
-      "--certificatesresolvers.leresolver.acme.storage=/data/acme.json"
-    ]
+    name  = "additionalArguments[0]"
+    value = "--certificatesresolvers.leresolver.acme.storage=/data/acme.json"
+  }
+  set {
+    name  = "additionalArguments[1]"
+    value = "--configFile=/config/traefik.toml"
   }
   set {
     name  = "ingressRoute.dashboard.enabled"
     value = false
   }
   set {
-    name = "service.annotations"
-    value = {
-      "service.beta.kubernetes.io/azure-load-balancer-resource-group" = azurerm_resource_group.cluster.name
-    }
+    name  = "service.annotations.service.beta.kubernetes.io/azure-load-balancer-resource-group"
+    value = azurerm_resource_group.cluster.name
   }
   set {
     name  = "ports.web.redirectTo"
@@ -94,15 +97,18 @@ resource "helm_release" "traefik" {
     value = "leresolver"
   }
   set {
-    name = "volumes"
-    value = [
-      {
-        type      = "configMap"
-        name      = kubernetes_manifest.traefik_configmap.object.metadata.name
-        mountPath = "/config"
-      }
-    ]
+    name  = "volumes[0].type"
+    value = "configMap"
   }
+  set {
+    name  = "volumes[0].name"
+    value = kubernetes_manifest.traefik_configmap.object.metadata.name
+  }
+  set {
+    name  = "volumes[0].mountPath"
+    value = "/config"
+  }
+
   set {
     name  = "persistence.enabled"
     value = true
@@ -113,7 +119,7 @@ resource "helm_release" "traefik" {
   }
   set {
     name  = "persistence.storageClass"
-    value = kubernetes_storage_class.traefik_acme.metadata[0].name
+    value = kubernetes_manifest.traefik_acme_storageclass.object.metadata.name
   }
   set {
     name  = "persistence.size"

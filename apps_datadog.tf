@@ -21,7 +21,7 @@ resource "helm_release" "datadog_agent" {
 
   namespace = kubernetes_manifest.datadog_ns.object.metadata.name
 
-  set {
+  set_sensitive {
     name  = "datadog.apiKey"
     value = var.datadog.secret
   }

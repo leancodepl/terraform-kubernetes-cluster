@@ -21,36 +21,19 @@ resource "helm_release" "kube_state_metrics" {
   namespace = kubernetes_manifest.kube_state_metrics_ns[0].object.metadata.name
 
   set {
-    name = "resources"
-    value = {
-      requests = {
-        cpu    = "10m"
-        memory = "10Mi"
-      }
-      limits = {
-        cpu    = "10m"
-        memory = "10Mi"
-      }
-    }
+    name  = "resources.requests.cpu"
+    value = "100m"
   }
   set {
-    name   = "sources"
-    values = ["service", "ingress"]
+    name  = "resources.requests.memory"
+    value = "200Mi"
   }
   set {
-    name  = "provider"
-    value = "azure"
+    name  = "resources.limits.cpu"
+    value = "200m"
   }
   set {
-    name  = "registry"
-    value = "txt"
-  }
-  set {
-    name  = "txtOwnerId"
-    value = "external-dns-${var.prefix}-k8s"
-  }
-  set {
-    name  = "azure.useManagedIdentityExtension"
-    value = true
+    name  = "resources.limits.memory"
+    value = "300Mi"
   }
 }

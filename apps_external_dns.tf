@@ -18,24 +18,32 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   version    = "4.0.0"
 
-  namespace = kubernetes_manifest.external_dns_ns.object.metadata.name
+  namespace = kubernetes_manifest.external_dns_ns[0].object.metadata.name
+
 
   set {
-    name = "resources"
-    value = {
-      requests = {
-        cpu    = "10m"
-        memory = "10Mi"
-      }
-      limits = {
-        cpu    = "10m"
-        memory = "10Mi"
-      }
-    }
+    name  = "resources.requests.cpu"
+    value = "10m"
   }
   set {
-    name   = "sources"
-    values = ["service", "ingress"]
+    name  = "resources.requests.memory"
+    value = "10Mi"
+  }
+  set {
+    name  = "resources.limits.cpu"
+    value = "10m"
+  }
+  set {
+    name  = "resources.limits.memory"
+    value = "10Mi"
+  }
+  set {
+    name  = "sources[0]"
+    value = "service"
+  }
+  set {
+    name  = "sources[1]"
+    value = "ingress"
   }
   set {
     name  = "provider"
