@@ -1,4 +1,3 @@
-# We use it for Traefik ACME storage only and it shouldn't be used elsewhere.
 resource "kubernetes_cluster_role_binding" "azure_cloud_provider" {
   metadata {
     name = "azure-cloud-provider"
