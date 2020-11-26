@@ -1,4 +1,0 @@
-[certificatesResolvers.leresolver.acme]
-    email = "jakub.fijalkowski@leancode.pl"
-    logging = true
-    [certificatesResolvers.leresolver.acme.tlsChallenge]
