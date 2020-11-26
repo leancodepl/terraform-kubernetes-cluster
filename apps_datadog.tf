@@ -1,7 +1,3 @@
-locals {
-  datadog_excluded_fields = ["datadog.apiKey", "datadog.kubeStateMetricsEnabled"]
-}
-
 resource "kubernetes_manifest" "datadog_ns" {
   manifest = {
     apiVersion = "v1"
@@ -10,6 +6,12 @@ resource "kubernetes_manifest" "datadog_ns" {
       name = "datadog"
     }
   }
+}
+
+locals {
+  datadog_config = merge(var.datadog.config, {
+    "datadog.kubeStateMetricsEnabled" = false,
+  })
 }
 
 # See: https://github.com/DataDog/helm-charts/tree/master/charts/datadog
@@ -25,12 +27,8 @@ resource "helm_release" "datadog_agent" {
     name  = "datadog.apiKey"
     value = var.datadog.secret
   }
-  set {
-    name  = "datadog.kubeStateMetricsEnabled"
-    value = false
-  }
   dynamic "set" {
-    for_each = { for k, v in var.datadog.config : k => v if ! contains(local.datadog_excluded_fields, k) }
+    for_each = local.datadog_config
     content {
       name  = set.key
       value = set.value
