@@ -47,12 +47,11 @@ locals {
     "--certificatesresolvers.leresolver.acme.storage=/data/acme.json",
     "--certificatesResolvers.leresolver.acme.tlsChallenge",
     "--metrics.datadog",
-    "--metrics.datadog.addEntryPointsLabels=true",
-    "--metrics.datadog.addServiceLabels=true",
-    "--tracing.backend=datadog",
-    "--tracing.serviceName=traefik",
-    "--tracing.spanNameLimit=100",
-    "--tracing.backend.datadog",
+    "--metrics.datadog.addentrypointslabels",
+    "--metrics.datadog.addserviceslabels",
+    "--tracing",
+    "--tracing.datadog",
+    "--tracing.spannamelimit=100",
   ], var.traefik.args)
   traefik_config = merge(var.traefik.config, {
     "ingressRoute.dashboard.enabled"   = false,
