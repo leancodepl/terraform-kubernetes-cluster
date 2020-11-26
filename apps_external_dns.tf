@@ -11,6 +11,27 @@ resource "kubernetes_manifest" "external_dns_ns" {
   }
 }
 
+locals {
+  external_dns_config = {
+    "resources.requests.cpu"    = "10m",
+    "resources.requests.memory" = "20Mi",
+    "resources.limits.cpu"      = "100m",
+    "resources.limits.memory"   = "50Mi",
+    "sources[0]"                = "service",
+    "sources[1]"                = "ingress",
+    "provider"                  = "azure",
+    "registry"                  = "txt",
+    "txtOwnerId"                = "external-dns-${var.prefix}-k8s",
+    "azure.tenantId"            = data.azurerm_client_config.current.tenant_id,
+    "azure.subscriptionId"      = data.azurerm_client_config.current.subscription_id,
+    "azure.resourceGroup"       = azurerm_resource_group.cluster.name,
+    "azure.aadClientId"         = azuread_service_principal.service.application_id,
+
+    "logFormat" = "json",
+    "logLevel"  = "info",
+  }
+}
+
 resource "helm_release" "external_dns" {
   count = var.deploy_external_dns ? 1 : 0
 
@@ -21,45 +42,16 @@ resource "helm_release" "external_dns" {
 
   namespace = kubernetes_manifest.external_dns_ns[0].object.metadata.name
 
+  set_sensitive {
+    name  = "azure.aadClientSecret"
+    value = random_password.service_secret.result
+  }
 
-  set {
-    name  = "resources.requests.cpu"
-    value = "10m"
-  }
-  set {
-    name  = "resources.requests.memory"
-    value = "10Mi"
-  }
-  set {
-    name  = "resources.limits.cpu"
-    value = "10m"
-  }
-  set {
-    name  = "resources.limits.memory"
-    value = "10Mi"
-  }
-  set {
-    name  = "sources[0]"
-    value = "service"
-  }
-  set {
-    name  = "sources[1]"
-    value = "ingress"
-  }
-  set {
-    name  = "provider"
-    value = "azure"
-  }
-  set {
-    name  = "registry"
-    value = "txt"
-  }
-  set {
-    name  = "txtOwnerId"
-    value = "external-dns-${var.prefix}-k8s"
-  }
-  set {
-    name  = "azure.useManagedIdentityExtension"
-    value = true
+  dynamic "set" {
+    for_each = local.external_dns_config
+    content {
+      name  = set.key
+      value = set.value
+    }
   }
 }
