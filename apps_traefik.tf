@@ -55,13 +55,14 @@ locals {
     "--tracing.spannamelimit=100",
   ], var.traefik.args)
   traefik_config = merge(var.traefik.config, {
-    "ingressRoute.dashboard.enabled"   = false,
-    "persistence.accessMode"           = "ReadWriteMany",
-    "persistence.enabled"              = true,
-    "persistence.size"                 = "1Gi",
-    "persistence.storageClass"         = kubernetes_manifest.traefik_acme_storageclass.object.metadata.name,
-    "ports.web.redirectTo"             = "websecure",
-    "ports.websecure.tls.certResolver" = "leresolver",
+    "ingressRoute.dashboard.enabled"                       = false,
+    "persistence.accessMode"                               = "ReadWriteMany",
+    "persistence.enabled"                                  = true,
+    "persistence.size"                                     = "1Gi",
+    "persistence.storageClass"                             = kubernetes_manifest.traefik_acme_storageclass.object.metadata.name,
+    "ports.web.redirectTo"                                 = "websecure",
+    "ports.websecure.tls.certResolver"                     = "leresolver",
+    "providers.kubernetesIngress.publishedService.enabled" = true,
 
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = azurerm_resource_group.cluster.name,
     "service.spec.loadBalancerIP"                                                             = azurerm_public_ip.traefik_public_ip.ip_address,
