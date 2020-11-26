@@ -91,18 +91,18 @@ variable "datadog" {
 variable "traefik" {
   description = "Traefik configuration"
   type = object({
-    config_file = string,
-    config      = map(any),
+    args   = list(string),
+    config = map(any),
   })
   default = {
-    config_file = ""
-    config      = {}
+    args   = [],
+    config = {},
   }
 }
 
 variable "deploy_aad_pod_identity" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "aad_pod_identity" {
