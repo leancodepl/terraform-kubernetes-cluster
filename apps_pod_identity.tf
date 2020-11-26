@@ -1,7 +1,3 @@
-locals {
-  aad_pod_identity_excluded_fields = []
-}
-
 resource "kubernetes_manifest" "aad_pod_identity_ns" {
   count = var.deploy_aad_pod_identity ? 1 : 0
 
@@ -14,6 +10,28 @@ resource "kubernetes_manifest" "aad_pod_identity_ns" {
   }
 }
 
+locals {
+  aad_pod_identity_config = merge(var.aad_pod_identity.config, {
+    "forceNameSpaced"               = true,
+    "installCRDs"                   = true,
+    "mic.leaderElection.namespace"  = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
+    "mic.loggingFormat"             = "json"
+    "mic.micNamespace"              = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
+    "mic.resources.limits.cpu"      = "500m",
+    "mic.resources.limits.memory"   = "512Mi"
+    "mic.resources.requests.cpu"    = "100m",
+    "mic.resources.requests.memory" = "256Mi",
+    "mic.tag"                       = "1.7.0",
+    "nmi.loggingFormat"             = "json"
+    "nmi.resources.limits.cpu"      = "500m",
+    "nmi.resources.limits.memory"   = "512Mi"
+    "nmi.resources.requests.cpu"    = "100m",
+    "nmi.resources.requests.memory" = "256Mi",
+    "nmi.tag"                       = "1.7.0",
+    "rbac.allowAccessToSecrets"     = false,
+  })
+}
+
 resource "helm_release" "aad_pod_identity" {
   count = var.deploy_aad_pod_identity ? 1 : 0
 
@@ -24,73 +42,8 @@ resource "helm_release" "aad_pod_identity" {
 
   namespace = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
 
-  set {
-    name  = "mic.tag"
-    value = "1.7.0"
-  }
-  set {
-    name  = "nmi.tag"
-    value = "1.7.0"
-  }
-  set {
-    name  = "mic.loggingFormat"
-    value = "json"
-  }
-  set {
-    name  = "mic.leaderElection.namespace"
-    value = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
-  }
-  set {
-    name  = "nmi.micNamespace"
-    value = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name
-  }
-  set {
-    name  = "installCRDs"
-    value = true
-  }
-  set {
-    name  = "rbac.allowAccessToSecrets"
-    value = false
-  }
-  set {
-    name  = "forceNameSpaced"
-    value = true
-  }
-  set {
-    name  = "mic.resources.requests.cpu"
-    value = "100m"
-  }
-  set {
-    name  = "mic.resources.requests.memory"
-    value = "256Mi"
-  }
-  set {
-    name  = "mic.resources.limits.cpu"
-    value = "500m"
-  }
-  set {
-    name  = "mic.resources.limits.memory"
-    value = "512Mi"
-  }
-  set {
-    name  = "nmi.resources.requests.cpu"
-    value = "100m"
-  }
-  set {
-    name  = "nmi.resources.requests.memory"
-    value = "256Mi"
-  }
-  set {
-    name  = "nmi.resources.limits.cpu"
-    value = "500m"
-  }
-  set {
-    name  = "nmi.resources.limits.memory"
-    value = "512Mi"
-  }
-
   dynamic "set" {
-    for_each = { for k, v in var.aad_pod_identity.config : k => v if ! contains(local.aad_pod_identity_excluded_fields, k) }
+    for_each = local.aad_pod_identity_config
     content {
       name  = set.key
       value = set.value
