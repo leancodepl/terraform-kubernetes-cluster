@@ -11,19 +11,20 @@ resource "kubernetes_manifest" "service_account_secret" {
   manifest = {
     apiVersion = "v1"
     kind       = "Secret"
+    type       = "Opaque"
     metadata = {
       name      = "azure-service-account"
       namespace = "kube-system"
     }
 
     data = {
-      subscription_id = data.azurerm_client_config.current.subscription_id
-      tenant_id       = data.azurerm_client_config.current.tenant_id
+      subscription_id = base64encode(data.azurerm_client_config.current.subscription_id),
+      tenant_id       = base64encode(data.azurerm_client_config.current.tenant_id),
 
-      client_id     = azuread_service_principal.service.application_id
-      client_secret = random_password.service_secret.result
+      client_id     = base64encode(azuread_service_principal.service.application_id),
+      client_secret = base64encode(random_password.service_secret.result),
 
-      resource_group = azurerm_resource_group.cluster.name
+      resource_group = base64encode(azurerm_resource_group.cluster.name),
     }
   }
 
@@ -38,15 +39,15 @@ resource "kubernetes_manifest" "admin_access_crb" {
       name = "leancode-cluster-admins"
     }
 
-    role_ref = {
-      api_group = "rbac.authorization.k8s.io"
-      kind      = "ClusterRole"
-      name      = "cluster-admin"
+    roleRef = {
+      apiGroup = "rbac.authorization.k8s.io"
+      kind     = "ClusterRole"
+      name     = "cluster-admin"
     }
-    subject = [{
-      kind      = "Group"
-      api_group = "rbac.authorization.k8s.io"
-      name      = var.cluster_config.access.admin_access_group
+    subjects = [{
+      kind     = "Group"
+      apiGroup = "rbac.authorization.k8s.io"
+      name     = var.cluster_config.access.admin_access_group
     }]
   }
 }
@@ -59,15 +60,15 @@ resource "kubernetes_manifest" "dev_access_to_cluster_crb" {
       name = "leancode-cluster-viewers"
     }
 
-    role_ref = {
-      api_group = "rbac.authorization.k8s.io"
-      kind      = "ClusterRole"
-      name      = "view"
+    roleRef = {
+      apiGroup = "rbac.authorization.k8s.io"
+      kind     = "ClusterRole"
+      name     = "view"
     }
-    subject = [{
-      kind      = "Group"
-      api_group = "rbac.authorization.k8s.io"
-      name      = var.cluster_config.access.dev_access_group
+    subjects = [{
+      kind     = "Group"
+      apiGroup = "rbac.authorization.k8s.io"
+      name     = var.cluster_config.access.dev_access_group
     }]
   }
 }
@@ -81,15 +82,15 @@ resource "kubernetes_manifest" "admin_access_to_default_ns_rb" {
       namespace = "default"
     }
 
-    role_ref = {
-      api_group = "rbac.authorization.k8s.io"
-      kind      = "ClusterRole"
-      name      = "admin"
+    roleRef = {
+      apiGroup = "rbac.authorization.k8s.io"
+      kind     = "ClusterRole"
+      name     = "admin"
     }
-    subject = [{
-      kind      = "Group"
-      api_group = "rbac.authorization.k8s.io"
-      name      = var.cluster_config.access.dev_access_group
+    subjects = [{
+      kind     = "Group"
+      apiGroup = "rbac.authorization.k8s.io"
+      name     = var.cluster_config.access.dev_access_group
     }]
   }
 }
