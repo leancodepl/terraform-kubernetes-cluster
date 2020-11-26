@@ -5,7 +5,8 @@ resource "kubernetes_manifest" "external_dns_ns" {
     apiVersion = "v1"
     kind       = "Namespace"
     metadata = {
-      name = "external-dns"
+      name   = "external-dns"
+      labels = local.ns_labels
     }
   }
 }

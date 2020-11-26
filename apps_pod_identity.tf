@@ -5,7 +5,8 @@ resource "kubernetes_manifest" "aad_pod_identity_ns" {
     apiVersion = "v1"
     kind       = "Namespace"
     metadata = {
-      name = "aad-pod-identity"
+      name   = "aad-pod-identity"
+      labels = local.ns_labels
     }
   }
 }

@@ -10,7 +10,8 @@ resource "kubernetes_manifest" "traefik_ns" {
     apiVersion = "v1"
     kind       = "Namespace"
     metadata = {
-      name = "traefik"
+      name   = "traefik"
+      labels = local.ns_labels
     }
   }
 }

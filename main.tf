@@ -15,6 +15,10 @@ locals {
   tags = merge(var.tags, {
     cluster_name = var.prefix
   })
+  ns_labels = {
+    importance = "high",
+    kind       = "system",
+  }
 }
 
 resource "azurerm_resource_group" "cluster" {

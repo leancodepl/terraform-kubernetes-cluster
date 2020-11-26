@@ -5,7 +5,8 @@ resource "kubernetes_manifest" "kube_state_metrics_ns" {
     apiVersion = "v1"
     kind       = "Namespace"
     metadata = {
-      name = "kube-state-metrics"
+      name   = "kube-state-metrics"
+      labels = local.ns_labels
     }
   }
 }

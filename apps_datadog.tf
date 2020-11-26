@@ -3,7 +3,8 @@ resource "kubernetes_manifest" "datadog_ns" {
     apiVersion = "v1"
     kind       = "Namespace"
     metadata = {
-      name = "datadog"
+      name   = "datadog"
+      labels = local.ns_labels
     }
   }
 }
