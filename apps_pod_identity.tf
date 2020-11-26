@@ -21,13 +21,13 @@ locals {
     "mic.resources.limits.memory"   = "512Mi"
     "mic.resources.requests.cpu"    = "100m",
     "mic.resources.requests.memory" = "256Mi",
-    "mic.tag"                       = "1.7.0",
+    "mic.tag"                       = "v1.7.0",
     "nmi.loggingFormat"             = "json"
     "nmi.resources.limits.cpu"      = "500m",
     "nmi.resources.limits.memory"   = "512Mi"
     "nmi.resources.requests.cpu"    = "100m",
     "nmi.resources.requests.memory" = "256Mi",
-    "nmi.tag"                       = "1.7.0",
+    "nmi.tag"                       = "v1.7.0",
     "rbac.allowAccessToSecrets"     = false,
   })
 }
