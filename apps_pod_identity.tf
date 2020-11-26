@@ -17,18 +17,16 @@ locals {
     "installCRDs"                   = true,
     "mic.leaderElection.namespace"  = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
     "mic.loggingFormat"             = "json"
-    "mic.micNamespace"              = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
     "mic.resources.limits.cpu"      = "500m",
     "mic.resources.limits.memory"   = "512Mi"
     "mic.resources.requests.cpu"    = "100m",
     "mic.resources.requests.memory" = "256Mi",
-    "mic.tag"                       = "v1.7.0",
     "nmi.loggingFormat"             = "json"
+    "nmi.micNamespace"              = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
     "nmi.resources.limits.cpu"      = "500m",
     "nmi.resources.limits.memory"   = "512Mi"
     "nmi.resources.requests.cpu"    = "100m",
     "nmi.resources.requests.memory" = "256Mi",
-    "nmi.tag"                       = "v1.7.0",
     "rbac.allowAccessToSecrets"     = false,
   })
 }
