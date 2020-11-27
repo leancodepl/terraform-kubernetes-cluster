@@ -45,28 +45,37 @@ resource "azurerm_public_ip" "traefik_public_ip" {
 
 locals {
   traefik_args = concat([
-    "--certificatesresolvers.leresolver.acme.storage=/data/acme.json",
-    "--certificatesResolvers.leresolver.acme.tlsChallenge",
-    "--metrics.datadog",
-    "--metrics.datadog.addentrypointslabels",
-    "--metrics.datadog.addserviceslabels",
-    "--tracing",
-    "--tracing.datadog",
-    "--tracing.spannamelimit=100",
+    "--certificatesresolvers.le.acme.storage=/data/acme.json",
+    "--certificatesresolvers.le.acme.httpChallenge",
+    "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
+    "--certificatesresolvers.le.acme.email=jakub.fijalkowski@leancode.pl",
+    "--certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory",
   ], var.traefik.args)
-  traefik_config = merge(var.traefik.config, {
+  traefik_config_forced = merge(var.traefik.config, {
+    "image.tag"                                            = "2.3.4",
     "ingressRoute.dashboard.enabled"                       = false,
     "persistence.accessMode"                               = "ReadWriteMany",
     "persistence.enabled"                                  = true,
     "persistence.size"                                     = "1Gi",
     "persistence.storageClass"                             = kubernetes_manifest.traefik_acme_storageclass.object.metadata.name,
     "ports.web.redirectTo"                                 = "websecure",
-    "ports.websecure.tls.certResolver"                     = "leresolver",
+    "ports.websecure.tls.enabled"                          = true,
+    "ports.websecure.tls.certResolver"                     = "le",
     "providers.kubernetesIngress.publishedService.enabled" = true,
 
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = azurerm_resource_group.cluster.name,
     "service.spec.loadBalancerIP"                                                             = azurerm_public_ip.traefik_public_ip.ip_address,
   })
+  traefik_config = merge({
+    "resources.requests.cpu"    = "100m",
+    "resources.requests.memory" = "50Mi",
+    "resources.limits.cpu"      = "1",
+    "resources.limits.memory"   = "256Mi",
+
+    "logs.general.level"  = "INFO",
+    "logs.access.enabled" = false,
+    "logs.general.format" = "json",
+  }, local.traefik_config_forced)
 }
 
 resource "helm_release" "traefik" {
