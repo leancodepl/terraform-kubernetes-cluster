@@ -27,7 +27,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   service_principal {
     client_id     = azuread_service_principal.service.application_id
-    client_secret = random_string.service_secret.result
+    client_secret = random_password.service_secret.result
   }
 
   role_based_access_control {
@@ -36,7 +36,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     azure_active_directory {
       client_app_id     = azuread_application.client.application_id
       server_app_id     = azuread_application.server.application_id
-      server_app_secret = random_string.server_secret.result
+      server_app_secret = random_password.server_secret.result
     }
   }
 

@@ -1,10 +1,13 @@
 terraform {
   required_providers {
-    azuread    = ">= 0.9"
-    azurerm    = ">= 2.8.0"
-    kubernetes = ">= 1.11.2"
-    random     = ">= 2.2"
-    helm       = ">= 1.3.0"
+    azuread = ">= 1.1"
+    azurerm = ">= 2.38.0"
+    random  = ">= 3.0"
+    helm    = ">= 1.3.2"
+    kubernetes = {
+      source  = "kubernetes-alpha"
+      version = ">= 0.2.1"
+    }
   }
 }
 
@@ -12,6 +15,10 @@ locals {
   tags = merge(var.tags, {
     cluster_name = var.prefix
   })
+  ns_labels = {
+    importance = "high",
+    kind       = "system",
+  }
 }
 
 resource "azurerm_resource_group" "cluster" {

@@ -74,49 +74,55 @@ variable "cluster_config" {
   })
 }
 
-variable "datadog" {
-  description = "DataDog configuration"
-  type = object({
-    secret = string,
-    config = map(string)
-  })
-}
-
-variable "datadog_additional_config" {
-  description = "Additional config files placed in Datadog's conf.d folder"
-  type        = map(map(string))
-  default     = {}
-}
-
 variable "peered_network" {
   description = "The id of the network that the cluster network will peer to"
   default     = ""
   type        = string
 }
 
+variable "datadog" {
+  description = "DataDog configuration"
+  type = object({
+    secret = string,
+    config = map(any)
+  })
+}
+
 variable "traefik" {
   description = "Traefik configuration"
   type = object({
-    config_file = string
-    resources = object({
-      limits = object({
-        cpu    = string,
-        memory = string,
-      })
-    })
+    args   = list(string),
+    config = map(any),
   })
   default = {
-    config_file = "traefik.toml"
-    resources = {
-      limits = {
-        cpu    = "100m"
-        memory = "50Mi"
-      }
-    }
+    args   = [],
+    config = {},
   }
 }
 
 variable "deploy_aad_pod_identity" {
   type    = bool
-  default = false
+  default = true
+}
+
+variable "aad_pod_identity" {
+  description = "AAD Pod Identity configuration"
+  type = object({
+    config = map(any),
+  })
+  default = {
+    config = {}
+  }
+}
+
+variable "deploy_external_dns" {
+  description = "Whether to deploy External DNS"
+  type        = bool
+  default     = true
+}
+
+variable "deploy_kube_state_metrics" {
+  description = "Whether to deploy kube-state-metrics"
+  type        = bool
+  default     = true
 }
