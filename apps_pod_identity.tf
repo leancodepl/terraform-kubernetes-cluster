@@ -15,14 +15,14 @@ locals {
   aad_pod_identity_config = merge(var.aad_pod_identity.config, {
     "forceNameSpaced"               = true,
     "installCRDs"                   = true,
-    "mic.leaderElection.namespace"  = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
+    "mic.leaderElection.namespace"  = var.deploy_aad_pod_identity ? kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name : "default",
     "mic.loggingFormat"             = "json"
     "mic.resources.limits.cpu"      = "500m",
     "mic.resources.limits.memory"   = "512Mi"
     "mic.resources.requests.cpu"    = "100m",
     "mic.resources.requests.memory" = "256Mi",
     "nmi.loggingFormat"             = "json"
-    "nmi.micNamespace"              = kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name,
+    "nmi.micNamespace"              = var.deploy_aad_pod_identity ? kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name : "default",
     "nmi.resources.limits.cpu"      = "500m",
     "nmi.resources.limits.memory"   = "512Mi"
     "nmi.resources.requests.cpu"    = "100m",
