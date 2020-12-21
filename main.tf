@@ -8,6 +8,10 @@ terraform {
       source  = "kubernetes-alpha"
       version = ">= 0.2.1"
     }
+    kubernetes-old = {
+      source  = "kubernetes"
+      version = ">= 1.13.1"
+    }
   }
 }
 
