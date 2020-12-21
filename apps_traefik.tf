@@ -44,7 +44,7 @@ locals {
     "--certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory",
   ], var.traefik.args)
   traefik_config_forced = merge(var.traefik.config, {
-    "image.tag"                                            = "2.3.4",
+    "image.tag"                                            = "2.3.6",
     "ingressRoute.dashboard.enabled"                       = false,
     "persistence.accessMode"                               = "ReadWriteMany",
     "persistence.enabled"                                  = true,
