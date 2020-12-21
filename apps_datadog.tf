@@ -1,11 +1,7 @@
-resource "kubernetes_manifest" "datadog_ns" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Namespace"
-    metadata = {
-      name   = "datadog"
-      labels = local.ns_labels
-    }
+resource "kubernetes_namespace" "datadog" {
+  metadata {
+    name   = "datadog"
+    labels = local.ns_labels
   }
 }
 
@@ -22,7 +18,7 @@ resource "helm_release" "datadog_agent" {
   chart      = "datadog"
   version    = "2.6.0"
 
-  namespace = kubernetes_manifest.datadog_ns.object.metadata.name
+  namespace = kubernetes_namespace.datadog.metadata[0].name
 
   set_sensitive {
     name  = "datadog.apiKey"

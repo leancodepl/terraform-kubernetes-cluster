@@ -5,30 +5,22 @@ locals {
   }
 }
 
-resource "kubernetes_manifest" "traefik_ns" {
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Namespace"
-    metadata = {
-      name   = "traefik"
-      labels = local.ns_labels
-    }
+resource "kubernetes_namespace" "traefik" {
+  metadata {
+    name   = "traefik"
+    labels = local.ns_labels
   }
 }
 
-resource "kubernetes_manifest" "traefik_acme_storageclass" {
-  manifest = {
-    apiVersion = "storage.k8s.io/v1"
-    kind       = "StorageClass"
-    metadata = {
-      name = "traefik-acme"
-    }
-    provisioner          = "kubernetes.io/azure-file"
-    mountOptions         = ["dir_mode=0777", "file_mode=0600", "uid=65532", "gid=65532"]
-    allowVolumeExpansion = false
-    parameters = {
-      skuName = "Standard_LRS"
-    }
+resource "kubernetes_storage_class" "traefik_acme" {
+  metadata {
+    name = "traefik-acme"
+  }
+  storage_provisioner    = "kubernetes.io/azure-file"
+  mount_options          = ["dir_mode=0777", "file_mode=0600", "uid=0", "gid=0"]
+  allow_volume_expansion = false
+  parameters = {
+    skuName = "Standard_LRS"
   }
 }
 
@@ -57,7 +49,7 @@ locals {
     "persistence.accessMode"                               = "ReadWriteMany",
     "persistence.enabled"                                  = true,
     "persistence.size"                                     = "1Gi",
-    "persistence.storageClass"                             = kubernetes_manifest.traefik_acme_storageclass.object.metadata.name,
+    "persistence.storageClass"                             = kubernetes_storage_class.traefik_acme.metadata[0].name,
     "ports.web.redirectTo"                                 = "websecure",
     "ports.websecure.tls.enabled"                          = true,
     "ports.websecure.tls.certResolver"                     = "le",
@@ -85,7 +77,7 @@ resource "helm_release" "traefik" {
   chart      = "traefik"
   version    = "9.9.0"
 
-  namespace = kubernetes_manifest.traefik_ns.object.metadata.name
+  namespace = kubernetes_namespace.traefik.metadata[0].name
 
   dynamic "set" {
     for_each = local.traefik_config

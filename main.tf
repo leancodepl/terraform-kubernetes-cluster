@@ -5,10 +5,6 @@ terraform {
     random  = ">= 3.0"
     helm    = ">= 2.0.1"
     kubernetes = {
-      source  = "kubernetes-alpha"
-      version = ">= 0.2.1"
-    }
-    kubernetes-old = {
       source  = "kubernetes"
       version = ">= 1.13.1"
     }

@@ -1,13 +1,9 @@
-resource "kubernetes_manifest" "kube_state_metrics_ns" {
+resource "kubernetes_namespace" "kube_state_metrics" {
   count = var.deploy_kube_state_metrics ? 1 : 0
 
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Namespace"
-    metadata = {
-      name   = "kube-state-metrics"
-      labels = local.ns_labels
-    }
+  metadata {
+    name   = "aad-pod-identity"
+    labels = local.ns_labels
   }
 }
 
@@ -28,7 +24,7 @@ resource "helm_release" "kube_state_metrics" {
   chart      = "kube-state-metrics"
   version    = "1.0.0"
 
-  namespace = kubernetes_manifest.kube_state_metrics_ns[0].object.metadata.name
+  namespace = kubernetes_namespace.kube_state_metrics[0].metadata[0].name
 
   dynamic "set" {
     for_each = local.kube_state_metrics_config
