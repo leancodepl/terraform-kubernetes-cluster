@@ -13,7 +13,7 @@ resource "kubernetes_manifest" "aad_pod_identity_ns" {
 
 locals {
   aad_pod_identity_config = merge(var.aad_pod_identity.config, {
-    "forceNameSpaced"               = true,
+    "forceNamespaced"               = true,
     "installCRDs"                   = true,
     "mic.leaderElection.namespace"  = var.deploy_aad_pod_identity ? kubernetes_manifest.aad_pod_identity_ns[0].object.metadata.name : "default",
     "mic.loggingFormat"             = "json"
