@@ -75,7 +75,7 @@ resource "helm_release" "traefik" {
 
   repository = "https://helm.traefik.io/traefik"
   chart      = "traefik"
-  version    = "9.9.0"
+  version    = "9.11.0"
 
   namespace = kubernetes_namespace.traefik.metadata[0].name
 

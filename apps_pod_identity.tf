@@ -33,7 +33,7 @@ resource "helm_release" "aad_pod_identity" {
   name       = "aad-pod-identity"
   repository = "https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
   chart      = "aad-pod-identity"
-  version    = "2.0.3"
+  version    = "3.0.0"
 
   namespace = kubernetes_namespace.aad_pod_identity[0].metadata[0].name
 
