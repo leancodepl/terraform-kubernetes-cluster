@@ -41,7 +41,7 @@ locals {
     "--certificatesresolvers.le.acme.httpChallenge",
     "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
     "--certificatesresolvers.le.acme.email=jakub.fijalkowski@leancode.pl",
-    "--certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory",
+    "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
   ], var.traefik.args)
   traefik_config_forced = merge(var.traefik.config, {
     "image.tag"                                            = "2.3.6",
