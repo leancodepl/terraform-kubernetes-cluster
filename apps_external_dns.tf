@@ -1,13 +1,9 @@
-resource "kubernetes_manifest" "external_dns_ns" {
+resource "kubernetes_namespace" "external_dns" {
   count = var.deploy_external_dns ? 1 : 0
 
-  manifest = {
-    apiVersion = "v1"
-    kind       = "Namespace"
-    metadata = {
-      name   = "external-dns"
-      labels = local.ns_labels
-    }
+  metadata {
+    name   = "external-dns"
+    labels = local.ns_labels
   }
 }
 
@@ -38,9 +34,9 @@ resource "helm_release" "external_dns" {
   name       = "external-dns"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "external-dns"
-  version    = "4.0.0"
+  version    = "4.5.0"
 
-  namespace = kubernetes_manifest.external_dns_ns[0].object.metadata.name
+  namespace = kubernetes_namespace.external_dns[0].metadata[0].name
 
   set_sensitive {
     name  = "azure.aadClientSecret"

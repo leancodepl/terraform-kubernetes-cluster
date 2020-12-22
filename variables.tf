@@ -36,7 +36,7 @@ variable "node_pool_network_size" {
 
 variable "tags" {
   description = "Additional tags used by the cluster"
-  type        = map
+  type        = map(any)
 }
 
 variable "ad_config" {

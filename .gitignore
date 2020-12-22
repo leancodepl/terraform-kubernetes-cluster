@@ -13,4 +13,7 @@ backend.tf
 
 terraform.tfvars
 
+.terraform.lock.hcl
+azurerm.tf
+
 *.plan
