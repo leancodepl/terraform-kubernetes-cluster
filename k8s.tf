@@ -42,12 +42,23 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   network_profile {
     network_plugin    = "azure"
+    network_policy    = "azure"
     load_balancer_sku = var.cluster_config.loadbalancer
 
     # Totally outside the 10.X.X.X that we use internally
     docker_bridge_cidr = "172.17.0.1/16"
     service_cidr       = "10.255.0.0/16"
     dns_service_ip     = "10.255.0.10"
+  }
+
+  addon_profile {
+    oms_agent {
+      enabled = false
+    }
+
+    kube_dashboard {
+      enabled = false
+    }
   }
 
   api_server_authorized_ip_ranges = var.cluster_config.access.authorized_ip_ranges
