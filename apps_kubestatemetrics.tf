@@ -2,7 +2,7 @@ resource "kubernetes_namespace" "kube_state_metrics" {
   count = var.deploy_kube_state_metrics ? 1 : 0
 
   metadata {
-    name   = "aad-pod-identity"
+    name   = "kube-state-metrics"
     labels = local.ns_labels
   }
 }
