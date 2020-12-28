@@ -10,14 +10,9 @@ locals {
     "datadog.kubeStateMetricsEnabled" = false,
 
     # FIXME: https://github.com/DataDog/integrations-core/issues/2582
-    "datadog.env[0].name"              = "DD_KUBELET_CLIENT_CA",
-    "datadog.env[0].value"             = "/etc/kubernetes/certs/kubeletserver.crt",
-    "agents.volumes[0].name"           = "k8s-certs",
-    "agents.volumes[0].hostPath.path"  = "/etc/kubernetes/certs"
-    "agents.volumes[0].hostPath.type"  = "",
-    "agents.volumeMounts[0].name"      = "k8s-certs",
-    "agents.volumeMounts[0].readOnly"  = true,
-    "agents.volumeMounts[0].mountPath" = "/etc/kubernetes/certs",
+    # And the hack with custom CA file does not work for AKS v1.19 and up
+    "datadog.env[0].name"  = "DD_KUBELET_TLS_VERIFY",
+    "datadog.env[0].value" = "\"false\"",
   })
 }
 
