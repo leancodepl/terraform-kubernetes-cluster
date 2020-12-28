@@ -65,6 +65,7 @@ variable "cluster_config" {
       min_count           = number,
       max_count           = number,
       enable_auto_scaling = bool,
+      version             = string,
       node_taints         = list(string)
     }),
     access = object({

@@ -20,7 +20,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
     vnet_subnet_id = azurerm_subnet.node_pool.id
 
-    node_taints = var.cluster_config.default_pool.node_taints
+    orchestrator_version = var.cluster_config.default_pool.version
+    node_taints          = var.cluster_config.default_pool.node_taints
 
     type = "VirtualMachineScaleSets"
   }
@@ -57,6 +58,18 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     }
 
     kube_dashboard {
+      enabled = false
+    }
+
+    azure_policy {
+      enabled = var.cluster_config.network_policy != null
+    }
+
+    http_application_routing {
+      enabled = false
+    }
+
+    aci_connector_linux {
       enabled = false
     }
   }
