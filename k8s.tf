@@ -59,6 +59,18 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     kube_dashboard {
       enabled = false
     }
+
+    azure_policy {
+      enabled = var.cluster_config.network_policy != null
+    }
+
+    http_application_routing {
+      enabled = false
+    }
+
+    aci_connector_linux {
+      enabled = false
+    }
   }
 
   api_server_authorized_ip_ranges = var.cluster_config.access.authorized_ip_ranges
