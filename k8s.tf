@@ -42,7 +42,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   network_profile {
     network_plugin    = "azure"
-    network_policy    = "azure"
+    network_policy    = var.cluster_config.network_policy
     load_balancer_sku = var.cluster_config.loadbalancer
 
     # Totally outside the 10.X.X.X that we use internally
