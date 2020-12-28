@@ -54,8 +54,9 @@ variable "ad_config" {
 variable "cluster_config" {
   description = "Configuration of the cluster"
   type = object({
-    version      = string,
-    loadbalancer = string,
+    version        = string,
+    loadbalancer   = string,
+    network_policy = string,
     default_pool = object({
       vm_size             = string,
       os_disk_size_gb     = string,
