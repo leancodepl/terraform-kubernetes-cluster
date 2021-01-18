@@ -101,4 +101,6 @@ resource "helm_release" "traefik_options" {
   name      = "traefik-options"
   namespace = kubernetes_namespace.traefik.metadata[0].name
   chart     = "${path.module}/charts/traefik-options"
+
+  depends_on = [helm_release.traefik]
 }
