@@ -42,6 +42,7 @@ locals {
     "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
     "--certificatesresolvers.le.acme.email=jakub.fijalkowski@leancode.pl",
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
+    "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
   ], var.traefik.args)
   traefik_config_forced = merge(var.traefik.config, {
     "image.tag"                                            = "2.3.6",
@@ -96,3 +97,8 @@ resource "helm_release" "traefik" {
   }
 }
 
+resource "helm_release" "traefik_options" {
+  name      = "traefik-options"
+  namespace = kubernetes_namespace.traefik.metadata[0].name
+  chart     = "${path.module}/charts/traefik-options"
+}
