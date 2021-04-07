@@ -22,3 +22,9 @@ resource "azurerm_role_assignment" "aad_vm_contributor" {
   role_definition_name = "Virtual Machine Contributor"
   principal_id         = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
 }
+
+resource "azurerm_role_assignment" "aad_managed_identity_operator_for_cluster_identity" {
+  scope                = azurerm_user_assigned_identity.cluster_identity.id
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_kubernetes_cluster.cluster.kubelet_identity[0].object_id
+}
