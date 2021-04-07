@@ -1,8 +1,8 @@
 output "cluster_service_user" {
   value = {
-    application_id        = azuread_application.service.application_id
-    service_principal_id  = azuread_service_principal.service.id
-    service_principal_key = random_password.service_secret.result
+    application_id       = azuread_application.service.application_id
+    service_principal_id = azuread_service_principal.service.id
+    managed_identity_id  = azurerm_user_assigned_identity.cluster_identity.id
   }
   sensitive = true
 }
