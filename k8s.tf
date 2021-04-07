@@ -33,9 +33,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     type = "VirtualMachineScaleSets"
   }
 
-  identity {
-    type                      = "UserAssigned"
-    user_assigned_identity_id = azurerm_user_assigned_identity.cluster_identity.id
+  service_principal {
+    client_id     = azuread_service_principal.service.application_id
+    client_secret = random_password.service_secret.result
   }
 
   role_based_access_control {
