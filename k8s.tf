@@ -1,3 +1,10 @@
+resource "azurerm_user_assigned_identity" "cluster_identity" {
+  name                = "${var.prefix}-k8s-cluster-identity"
+  resource_group_name = azurerm_resource_group.cluster.name
+  location            = azurerm_resource_group.cluster.location
+  tags                = local.tags
+}
+
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "${var.prefix}-k8s-cluster"
   resource_group_name = azurerm_resource_group.cluster.name
@@ -28,7 +35,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   identity {
     type                      = "UserAssigned"
-    user_assigned_identity_id = azuread_service_principal.service.application_id
+    user_assigned_identity_id = azurerm_user_assigned_identity.cluster_identity.id
   }
 
   role_based_access_control {
