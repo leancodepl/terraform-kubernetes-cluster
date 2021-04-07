@@ -1,20 +1,3 @@
-output "cluster_server_user" {
-  value = {
-    application_id        = azuread_application.server.application_id
-    service_principal_id  = azuread_service_principal.server.id
-    service_principal_key = random_password.server_secret.result
-  }
-  sensitive = true
-}
-
-output "cluster_client_user" {
-  value = {
-    application_id       = azuread_application.client.application_id
-    service_principal_id = azuread_service_principal.client.id
-  }
-  sensitive = true
-}
-
 output "cluster_service_user" {
   value = {
     application_id        = azuread_application.service.application_id
