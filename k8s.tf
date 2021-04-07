@@ -81,3 +81,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     azurerm_role_assignment.service_contributor
   ]
 }
+
+data "azurerm_resource_group" "cluster_node_group" {
+  name = azurerm_kubernetes_cluster.cluster.node_resource_group
+}
+
