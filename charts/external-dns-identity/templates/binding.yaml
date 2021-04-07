@@ -1,11 +1,11 @@
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentityBinding
 metadata:
-  name: {{- .Values.identityName }}-binding
+  name: {{ .Values.identityName }}-binding
   annotations:
     aadpodidentity.k8s.io/Behavior: namespaced
   labels:
     {{- include "external-dns-identity.labels" . | nindent 4 }}
 spec:
-  azureIdentity: {{- .Values.identityName }}
-  selector: {{- .Values.identityName }}
+  azureIdentity: {{ .Values.identityName }}
+  selector: {{ .Values.identityName }}
