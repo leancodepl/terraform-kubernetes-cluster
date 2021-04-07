@@ -1,10 +1,3 @@
-resource "azurerm_user_assigned_identity" "cluster_identity" {
-  name                = "${var.prefix}-k8s-cluster-identity"
-  resource_group_name = azurerm_resource_group.cluster.name
-  location            = azurerm_resource_group.cluster.location
-  tags                = local.tags
-}
-
 resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "${var.prefix}-k8s-cluster"
   resource_group_name = azurerm_resource_group.cluster.name
@@ -33,21 +26,9 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     type = "VirtualMachineScaleSets"
   }
 
-  dynamic "identity" {
-    for_each = var.use_user_assigned_identity ? [true] : []
-
-    content {
-      type                      = "UserAssigned"
-      user_assigned_identity_id = azurerm_user_assigned_identity.cluster_identity.id
-    }
-  }
-  dynamic "service_principal" {
-    for_each = var.use_user_assigned_identity ? [] : [true]
-
-    content {
-      client_id     = azuread_service_principal.service.application_id
-      client_secret = random_password.service_secret.result
-    }
+  identity {
+    type                      = "UserAssigned"
+    user_assigned_identity_id = azurerm_user_assigned_identity.cluster_identity.id
   }
 
   role_based_access_control {

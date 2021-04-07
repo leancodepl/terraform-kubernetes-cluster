@@ -100,11 +100,6 @@ variable "traefik" {
   }
 }
 
-variable "deploy_aad_pod_identity" {
-  type    = bool
-  default = true
-}
-
 variable "aad_pod_identity" {
   description = "AAD Pod Identity configuration"
   type = object({
@@ -125,10 +120,4 @@ variable "deploy_kube_state_metrics" {
   description = "Whether to deploy kube-state-metrics"
   type        = bool
   default     = true
-}
-
-variable "use_user_assigned_identity" {
-  description = "Indicates whether to use managed, UserAssigned identity or raw service principal. Disabled to allow manual migration."
-  type        = bool
-  default     = false
 }
