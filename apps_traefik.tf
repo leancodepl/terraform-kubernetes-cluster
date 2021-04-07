@@ -45,7 +45,6 @@ locals {
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
   ], var.traefik.args)
   traefik_config_forced = merge(var.traefik.config, {
-    "image.tag"                                            = "2.3.6",
     "ingressRoute.dashboard.enabled"                       = false,
     "persistence.accessMode"                               = "ReadWriteMany",
     "persistence.enabled"                                  = true,
@@ -76,7 +75,7 @@ resource "helm_release" "traefik" {
 
   repository = "https://helm.traefik.io/traefik"
   chart      = "traefik"
-  version    = "9.11.0"
+  version    = "9.18.2"
 
   namespace = kubernetes_namespace.traefik.metadata[0].name
 

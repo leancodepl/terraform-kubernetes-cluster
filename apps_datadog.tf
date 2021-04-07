@@ -11,8 +11,7 @@ locals {
 
     # FIXME: https://github.com/DataDog/integrations-core/issues/2582
     # And the hack with custom CA file does not work for AKS v1.19 and up
-    "datadog.env[0].name"  = "DD_KUBELET_TLS_VERIFY",
-    "datadog.env[0].value" = "\"false\"",
+    "datadog.kubelet.tlsVerify" = false,
   })
 }
 
@@ -21,7 +20,7 @@ resource "helm_release" "datadog_agent" {
   name       = "datadog"
   repository = "https://helm.datadoghq.com"
   chart      = "datadog"
-  version    = "2.6.7"
+  version    = "2.10.11"
 
   namespace = kubernetes_namespace.datadog.metadata[0].name
 

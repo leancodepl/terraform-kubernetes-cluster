@@ -1,6 +1,6 @@
 # Server app
 resource "azuread_application" "server" {
-  name            = "${var.name_prefix} AKS Server"
+  display_name    = "${var.name_prefix} AKS Server"
   homepage        = "https://server.${var.domain}"
   identifier_uris = ["https://server.${var.domain}"]
   reply_urls      = ["https://server.${var.domain}"]
@@ -49,7 +49,7 @@ resource "azuread_service_principal_password" "server_secret" {
 
 # Client app
 resource "azuread_application" "client" {
-  name = "${var.name_prefix} AKS Client"
+  display_name = "${var.name_prefix} AKS Client"
 
   available_to_other_tenants = false
   type                       = "native"
@@ -82,7 +82,7 @@ resource "azuread_service_principal" "client" {
 
 # Service account (mgmt for K8s)
 resource "azuread_application" "service" {
-  name            = "${var.name_prefix} AKS User"
+  display_name    = "${var.name_prefix} AKS User"
   homepage        = "https://service.${var.domain}"
   identifier_uris = ["https://service.${var.domain}"]
   reply_urls      = ["https://service.${var.domain}"]

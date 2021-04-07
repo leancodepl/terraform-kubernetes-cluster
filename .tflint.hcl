@@ -1,6 +1,4 @@
-config {
-  deep_check = false
-}
+config { }
 
 plugin "azurerm" {
   enabled = true
