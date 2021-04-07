@@ -24,7 +24,6 @@ locals {
     "azure.subscriptionId"              = data.azurerm_client_config.current.subscription_id,
     "azure.resourceGroup"               = azurerm_resource_group.cluster.name,
     "azure.useManagedIdentityExtension" = true,
-    "azure.userAssignedIdentityID"      = azurerm_user_assigned_identity.cluster_identity.id,
 
     "podLabels.aadpodidbinding" = local.external_dns_identity_name,
 
