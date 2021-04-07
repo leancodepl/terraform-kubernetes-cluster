@@ -52,6 +52,7 @@ resource "azuread_application" "client" {
   display_name = "${var.name_prefix} AKS Client"
 
   available_to_other_tenants = false
+  type                       = "native"
   public_client              = true
 
   reply_urls = ["https://client.${var.domain}"]
