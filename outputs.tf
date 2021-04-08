@@ -1,8 +1,9 @@
-output "cluster_service_user" {
+output "identities" {
   value = {
-    application_id        = azuread_application.service.application_id
-    service_principal_id  = azuread_service_principal.service.id
-    service_principal_key = random_password.service_secret.result
+    cluster_identity_id           = azurerm_user_assigned_identity.cluster_identity.id
+    cluster_identity_principal_id = azurerm_user_assigned_identity.cluster_identity.principal_id
+
+    kubelet_identity = azurerm_kubernetes_cluster.cluster.kubelet_identity
   }
   sensitive = true
 }

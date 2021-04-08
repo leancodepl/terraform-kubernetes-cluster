@@ -39,16 +39,6 @@ variable "tags" {
   type        = map(any)
 }
 
-variable "ad_config" {
-  description = "AD configuration"
-  type = object({
-    service_secret_end_date = string,
-  })
-  default = {
-    service_secret_end_date = "2022-06-10T12:00:00Z",
-  }
-}
-
 variable "cluster_config" {
   description = "Configuration of the cluster"
   type = object({
@@ -100,11 +90,6 @@ variable "traefik" {
   }
 }
 
-variable "deploy_aad_pod_identity" {
-  type    = bool
-  default = true
-}
-
 variable "aad_pod_identity" {
   description = "AAD Pod Identity configuration"
   type = object({
@@ -125,10 +110,4 @@ variable "deploy_kube_state_metrics" {
   description = "Whether to deploy kube-state-metrics"
   type        = bool
   default     = true
-}
-
-variable "use_user_assigned_identity" {
-  description = "Indicates whether to use managed, UserAssigned identity or raw service principal. Disabled to allow manual migration."
-  type        = bool
-  default     = false
 }
