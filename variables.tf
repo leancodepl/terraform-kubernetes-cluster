@@ -111,3 +111,49 @@ variable "deploy_kube_state_metrics" {
   type        = bool
   default     = true
 }
+
+variable "deploy_opentelemetry_collector" {
+  description = "Whether to deploy opentelemetry-collector"
+  type        = bool
+  default     = true
+}
+
+variable "opentelemetry" {
+  description = "OpenTelemetry Collector configuration"
+  type = object({
+    version = string,
+    limiter = object({
+      ballast_size_mib = number,
+      limit_mib        = number,
+      spike_limit_mib  = number,
+    }),
+    resources = object({
+      limits = object({
+        cpu    = string,
+        memory = string,
+      }),
+      requests = object({
+        cpu    = string,
+        memory = string,
+      }),
+    })
+  })
+  default = {
+    version = "0.1.0",
+    limiter = {
+      ballast_size_mib = 165,
+      limit_mib        = 400,
+      spike_limit_mib  = 100,
+    },
+    resources = {
+      limits = {
+        cpu    = "500m",
+        memory = "500Mi",
+      },
+      requests = {
+        cpu    = "100m",
+        memory = "100Mi",
+      },
+    },
+  }
+}
