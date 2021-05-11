@@ -107,8 +107,9 @@ resource "kubernetes_daemonset" "otel_agent" {
   count = var.deploy_opentelemetry_collector ? 1 : 0
 
   metadata {
-    name   = "otel-agent"
-    labels = local.otel_tags
+    name      = "otel-agent"
+    namespace = kubernetes_namespace.otel[0].metadata[0].name
+    labels    = local.otel_tags
   }
 
   spec {
