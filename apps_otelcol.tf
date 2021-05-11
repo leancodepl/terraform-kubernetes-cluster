@@ -107,8 +107,9 @@ resource "kubernetes_daemonset" "otel_agent" {
   count = var.deploy_opentelemetry_collector ? 1 : 0
 
   metadata {
-    name   = "otel-agent"
-    labels = local.otel_tags
+    name      = "otel-agent"
+    namespace = kubernetes_namespace.otel[0].metadata[0].name
+    labels    = local.otel_tags
   }
 
   spec {
@@ -137,7 +138,7 @@ resource "kubernetes_daemonset" "otel_agent" {
 
         container {
           name              = "agent"
-          image             = "leancode.azurecr.op/otelcol:v${var.opentelemetry.version}"
+          image             = "leancode.azurecr.io/otelcol:v${var.opentelemetry.version}"
           image_pull_policy = "Always"
 
           command = [
