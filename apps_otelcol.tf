@@ -138,7 +138,7 @@ resource "kubernetes_daemonset" "otel_agent" {
 
         container {
           name              = "agent"
-          image             = "leancode.azurecr.op/otelcol:v${var.opentelemetry.version}"
+          image             = "leancode.azurecr.io/otelcol:v${var.opentelemetry.version}"
           image_pull_policy = "Always"
 
           command = [
