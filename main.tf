@@ -1,12 +1,12 @@
 terraform {
   required_providers {
-    azuread = ">= 1.4"
-    azurerm = ">= 2.54"
+    azuread = ">= 1.6"
+    azurerm = ">= 2.69"
     random  = ">= 3.1"
-    helm    = ">= 2.1"
+    helm    = ">= 2.2"
     kubernetes = {
       source  = "kubernetes"
-      version = ">= 2.0"
+      version = ">= 2.3"
     }
   }
 }
