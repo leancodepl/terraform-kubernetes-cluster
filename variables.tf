@@ -81,12 +81,14 @@ variable "datadog" {
 variable "traefik" {
   description = "Traefik configuration"
   type = object({
-    args   = list(string),
-    config = map(any),
+    args      = list(string),
+    config    = map(any),
+    acme_mail = string,
   })
   default = {
-    args   = [],
-    config = {},
+    args      = [],
+    config    = {},
+    acme_mail = "",
   }
 }
 

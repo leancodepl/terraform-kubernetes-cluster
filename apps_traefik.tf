@@ -40,7 +40,7 @@ locals {
     "--certificatesresolvers.le.acme.storage=/data/acme.json",
     "--certificatesresolvers.le.acme.httpChallenge",
     "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
-    "--certificatesresolvers.le.acme.email=jakub.fijalkowski@leancode.pl",
+    "--certificatesresolvers.le.acme.email=${var.traefik.acme_mail}",
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
   ], var.traefik.args)
