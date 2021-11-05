@@ -123,7 +123,7 @@ variable "deploy_opentelemetry_collector" {
 variable "opentelemetry" {
   description = "OpenTelemetry Collector configuration"
   type = object({
-    version = string,
+    image = string,
     limiter = object({
       ballast_size_mib = number,
       limit_mib        = number,
@@ -141,7 +141,7 @@ variable "opentelemetry" {
     })
   })
   default = {
-    version = "0.1.0",
+    image = "leancode.azurecr.io/otelcol:v0.1.0",
     limiter = {
       ballast_size_mib = 165,
       limit_mib        = 400,

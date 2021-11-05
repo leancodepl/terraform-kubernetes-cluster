@@ -33,7 +33,6 @@ resource "kubernetes_secret" "otel_config" {
           tags = [
             "env:${var.prefix}",
           ]
-          version = var.opentelemetry.version
         }
       }
 
@@ -138,7 +137,7 @@ resource "kubernetes_daemonset" "otel_agent" {
 
         container {
           name              = "agent"
-          image             = "leancode.azurecr.io/otelcol:v${var.opentelemetry.version}"
+          image             = var.opentelemetry.image
           image_pull_policy = "Always"
 
           command = [
