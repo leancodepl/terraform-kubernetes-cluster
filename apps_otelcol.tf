@@ -143,7 +143,6 @@ resource "kubernetes_daemonset" "otel_agent" {
           command = [
             "/otelcol",
             "--config=/conf/otel-agent-config.yaml",
-            "--mem-ballast-size-mib=${var.opentelemetry.limiter.ballast_size_mib}"
           ]
 
           port {
