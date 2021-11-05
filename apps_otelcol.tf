@@ -81,7 +81,7 @@ resource "kubernetes_secret" "otel_config" {
             processors = [
               "memory_limiter",
               "resourcedetection",
-              "k8s_tagger",
+              "k8sattributes",
               "batch",
             ]
             receivers = ["otlp"]
@@ -92,7 +92,7 @@ resource "kubernetes_secret" "otel_config" {
               "memory_limiter",
               "batch",
               "resourcedetection",
-              "k8s_tagger",
+              "k8sattributes",
             ]
             receivers = ["otlp"]
           }
