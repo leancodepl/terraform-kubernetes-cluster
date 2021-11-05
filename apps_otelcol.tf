@@ -43,7 +43,7 @@ resource "kubernetes_secret" "otel_config" {
         batch = {
           timeout = "10s"
         }
-        k8s_tagger = {
+        k8sattributes = {
           passthrough = true
         }
         memory_limiter = {
