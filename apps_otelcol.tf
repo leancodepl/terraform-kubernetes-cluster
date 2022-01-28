@@ -187,10 +187,15 @@ resource "kubernetes_daemonset" "otel_agent" {
           }
         }
 
-        toleration {
-          key      = "dedicated"
-          operator = "Exists"
-          effect   = "NoSchedule"
+        dynamic "toleration" {
+          for_each = var.opentelemetry.tolerations
+
+          content {
+            key      = each.value.key
+            operator = each.value.operator
+            value    = each.value.value
+            effect   = each.value.effect
+          }
         }
       }
     }
