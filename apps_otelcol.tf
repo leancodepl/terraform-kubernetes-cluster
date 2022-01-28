@@ -186,6 +186,12 @@ resource "kubernetes_daemonset" "otel_agent" {
             }
           }
         }
+
+        toleration {
+          key      = "dedicated"
+          operator = "Exists"
+          effect   = "NoSchedule"
+        }
       }
     }
   }
