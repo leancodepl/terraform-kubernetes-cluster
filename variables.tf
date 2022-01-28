@@ -139,12 +139,12 @@ variable "opentelemetry" {
         memory = string,
       }),
     }),
-    tolerations = list(object({
+    tolerations = optional(list(object({
       key      = string,
       operator = string,
-      value    = string,
+      value    = optional(string),
       effect   = string,
-    })),
+    }))),
   })
   default = {
     image = "leancode.azurecr.io/otelcol:v0.2.0",
