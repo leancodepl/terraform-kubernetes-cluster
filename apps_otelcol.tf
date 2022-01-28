@@ -191,10 +191,10 @@ resource "kubernetes_daemonset" "otel_agent" {
           for_each = var.opentelemetry.tolerations
 
           content {
-            key      = each.value.key
-            operator = each.value.operator
-            value    = each.value.value
-            effect   = each.value.effect
+            key      = toleration.value.key
+            operator = toleration.value.operator
+            value    = toleration.value.value
+            effect   = toleration.value.effect
           }
         }
       }
