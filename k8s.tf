@@ -27,17 +27,13 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   identity {
-    type                      = "UserAssigned"
-    user_assigned_identity_id = azurerm_user_assigned_identity.cluster_identity.id
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.cluster_identity.id]
   }
 
-  role_based_access_control {
-    enabled = true
-
-    azure_active_directory {
-      managed                = true
-      admin_group_object_ids = [var.cluster_config.access.admin_access_group]
-    }
+  azure_active_directory_role_based_access_control {
+    managed                = true
+    admin_group_object_ids = [var.cluster_config.access.admin_access_group]
   }
 
   network_profile {
@@ -51,28 +47,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     dns_service_ip     = "10.255.0.10"
   }
 
-  addon_profile {
-    oms_agent {
-      enabled = false
-    }
-
-    kube_dashboard {
-      enabled = false
-    }
-
-    azure_policy {
-      enabled = var.cluster_config.network_policy != null
-    }
-
-    http_application_routing {
-      enabled = false
-    }
-
-    aci_connector_linux {
-      enabled = false
-    }
-  }
-
+  azure_policy_enabled            = var.cluster_config.network_policy != null
   api_server_authorized_ip_ranges = var.cluster_config.access.authorized_ip_ranges
 
   tags = local.tags

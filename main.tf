@@ -1,13 +1,13 @@
 terraform {
   experiments = [module_variable_optional_attrs]
   required_providers {
-    azuread = ">= 2.8"
-    azurerm = ">= 2.84"
+    azuread = ">= 2.19"
+    azurerm = ">= 3.0"
     random  = ">= 3.1"
-    helm    = ">= 2.3"
+    helm    = ">= 2.5"
     kubernetes = {
       source  = "kubernetes"
-      version = ">= 2.6"
+      version = ">= 2.9"
     }
   }
 }
