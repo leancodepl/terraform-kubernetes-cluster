@@ -30,7 +30,7 @@ resource "azurerm_public_ip" "traefik_public_ip" {
   location            = azurerm_resource_group.cluster.location
 
   allocation_method = "Static"
-  sku               = var.cluster_config.loadbalancer
+  sku               = title(var.cluster_config.loadbalancer)
 
   tags = local.tags
 }
