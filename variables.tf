@@ -93,6 +93,14 @@ variable "traefik" {
   }
 }
 
+variable "traefik_ip_config" {
+  description = "The configuration of Traefik IP address"
+  type = object({
+    sku   = string,
+    zones = optional(list(string))
+  })
+}
+
 variable "aad_pod_identity" {
   description = "AAD Pod Identity configuration"
   type = object({
