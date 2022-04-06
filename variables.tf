@@ -45,6 +45,7 @@ variable "cluster_config" {
     version        = string,
     loadbalancer   = string,
     network_policy = string,
+    sku_tier       = optional(string),
     default_pool = object({
       vm_size             = string,
       os_disk_size_gb     = string,
@@ -90,6 +91,14 @@ variable "traefik" {
     config    = {},
     acme_mail = "",
   }
+}
+
+variable "traefik_ip_config" {
+  description = "The configuration of Traefik IP address"
+  type = object({
+    sku   = string,
+    zones = optional(list(string))
+  })
 }
 
 variable "aad_pod_identity" {
