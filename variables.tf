@@ -45,6 +45,7 @@ variable "cluster_config" {
     version        = string,
     loadbalancer   = string,
     network_policy = string,
+    sku_tier       = optional(string),
     default_pool = object({
       vm_size             = string,
       os_disk_size_gb     = string,
