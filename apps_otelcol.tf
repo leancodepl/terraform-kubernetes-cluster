@@ -71,6 +71,13 @@ resource "kubernetes_secret" "otel_config" {
             }
           }
         }
+        jaeger = {
+          protocols = {
+            thrift_http = {
+              endpoint = "0.0.0.0:14268"
+            }
+          }
+        }
       }
       service = {
         extensions = ["health_check"]
@@ -93,7 +100,7 @@ resource "kubernetes_secret" "otel_config" {
               "resourcedetection",
               "k8sattributes",
             ]
-            receivers = ["otlp"]
+            receivers = ["otlp", "jaeger"]
           }
         }
       }
@@ -148,6 +155,11 @@ resource "kubernetes_daemonset" "otel_agent" {
           port {
             host_port      = 55681
             container_port = 55681
+          }
+
+          port {
+            host_port      = 14268
+            container_port = 14268
           }
 
           resources {
