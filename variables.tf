@@ -156,7 +156,7 @@ variable "opentelemetry" {
     }))),
   })
   default = {
-    image = "otel/opentelemetry-collector:0.51.0",
+    image = "otel/opentelemetry-collector-contrib:0.51.0",
     limiter = {
       ballast_size_mib = 165,
       limit_mib        = 400,
