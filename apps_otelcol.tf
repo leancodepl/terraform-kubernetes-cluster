@@ -47,10 +47,9 @@ resource "kubernetes_secret" "otel_config" {
           passthrough = true
         }
         memory_limiter = {
-          ballast_size_mib = var.opentelemetry.limiter.ballast_size_mib
-          check_interval   = "5s"
-          limit_mib        = var.opentelemetry.limiter.limit_mib
-          spike_limit_mib  = var.opentelemetry.limiter.spike_limit_mib
+          check_interval  = "5s"
+          limit_mib       = var.opentelemetry.limiter.limit_mib
+          spike_limit_mib = var.opentelemetry.limiter.spike_limit_mib
         }
         resourcedetection = {
           detectors = [
@@ -139,11 +138,7 @@ resource "kubernetes_daemonset" "otel_agent" {
           name              = "agent"
           image             = var.opentelemetry.image
           image_pull_policy = "Always"
-
-          command = [
-            "/otelcol",
-            "--config=/conf/otel-agent-config.yaml",
-          ]
+          args              = ["--config", "/conf/otel-agent-config.yaml"]
 
           port {
             host_port      = 55680
