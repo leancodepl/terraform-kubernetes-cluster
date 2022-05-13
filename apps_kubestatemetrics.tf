@@ -22,7 +22,7 @@ resource "helm_release" "kube_state_metrics" {
   name       = "kube-state-metrics"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "kube-state-metrics"
-  version    = "2.1.15"
+  version    = "2.2.20"
 
   namespace = kubernetes_namespace.kube_state_metrics[0].metadata[0].name
 
