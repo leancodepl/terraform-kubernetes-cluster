@@ -156,7 +156,7 @@ variable "opentelemetry" {
     }))),
   })
   default = {
-    image = "leancode.azurecr.io/otelcol:v0.2.0",
+    image = "otel/opentelemetry-collector:0.51.0",
     limiter = {
       ballast_size_mib = 165,
       limit_mib        = 400,

@@ -139,11 +139,7 @@ resource "kubernetes_daemonset" "otel_agent" {
           name              = "agent"
           image             = var.opentelemetry.image
           image_pull_policy = "Always"
-
-          command = [
-            "/otelcol",
-            "--config=/conf/otel-agent-config.yaml",
-          ]
+          args              = ["--config", "/conf/otel-agent-config.yaml"]
 
           port {
             host_port      = 55680
