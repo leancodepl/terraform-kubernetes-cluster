@@ -52,7 +52,13 @@ output "plugin" {
   description = "The output that you need to pass to plugins for them to work."
   sensitive   = true
   value = {
-    cluster_id = azurerm_kubernetes_cluster.cluster.id
-    tags       = var.tags
+    prefix = var.prefix
+
+    cluster_id                  = azurerm_kubernetes_cluster.cluster.id
+    cluster_resource_group_name = azurerm_resource_group.cluster.id
+    cluster_identity_id         = azurerm_user_assigned_identity.cluster_identity.id
+    cluster_identity_client_id  = azurerm_user_assigned_identity.cluster_identity.client_id
+
+    tags = local.tags
   }
 }
