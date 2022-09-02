@@ -49,10 +49,9 @@ variable "tags" {
 }
 
 variable "access" {
-  description = "Configure access to the cluster"
+  description = "Configure access rules to the cluster."
   type = object({
     admin_access_group = string,
-    dev_access_group   = string,
   })
 }
 
