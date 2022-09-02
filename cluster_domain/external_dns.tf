@@ -57,16 +57,17 @@ resource "kubernetes_manifest" "identity" {
     apiVersion = "aadpodidentity.k8s.io/v1"
     kind       = "AzureIdentity"
     metadata = {
-      name = local.external_dns_identity_name
+      name      = local.external_dns_identity_name
+      namespace = kubernetes_namespace.external_dns.metadata[0].name
+      labels    = local.ns_labels
       annotations = {
         "aadpodidentity.k8s.io/Behavior" = "namespaced"
       }
-      labels = local.ns_labels
-      spec = {
-        type       = 0
-        resourceID = var.plugin.cluster_identity_id
-        clientID   = var.plugin.cluster_identity_client_id
-      }
+    }
+    spec = {
+      type       = 0
+      resourceID = var.plugin.cluster_identity_id
+      clientID   = var.plugin.cluster_identity_client_id
     }
   }
 
@@ -77,12 +78,13 @@ resource "kubernetes_manifest" "binding" {
     apiVersion = "aadpodidentity.k8s.io/v1"
     kind       = "AzureIdentityBinding"
     metadata = {
-      name   = "${local.external_dns_identity_name}-binding"
-      labels = local.ns_labels
-      spec = {
-        azureIdentity = local.external_dns_identity_name
-        selector      = local.external_dns_identity_name
-      }
+      name      = "${local.external_dns_identity_name}-binding"
+      namespace = kubernetes_namespace.external_dns.metadata[0].name
+      labels    = local.ns_labels
+    }
+    spec = {
+      azureIdentity = local.external_dns_identity_name
+      selector      = local.external_dns_identity_name
     }
   }
 }
