@@ -4,7 +4,7 @@ resource "azurerm_public_ip" "traefik_public_ip" {
   location            = var.plugin.cluster_resource_group_location
 
   allocation_method = "Static"
-  sku               = var.plugin.network_config.load_balancer_sku
+  sku               = title(var.plugin.network_config.load_balancer_sku)
 
   tags = var.plugin.tags
 }

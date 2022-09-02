@@ -66,6 +66,12 @@ resource "helm_release" "traefik" {
   }
 }
 
+// We can't move to kubernetes_manifest - to apply a manifest we must know it's schema during plan
+// phase. This means that the CRD (thus the content of this chart) needs to exists prior to
+// the application. This means that the `helm_release.traefik` resource needs to be applied _before_
+// the options - which would require two-pass `apply`. Having a chart bypasses this requirement (as
+// Helm provider does not validate the resources).
+// Provider/TF bug to track: https://github.com/hashicorp/terraform-provider-kubernetes/issues/1782
 resource "helm_release" "traefik_options" {
   name      = "traefik-options"
   namespace = kubernetes_namespace.traefik.metadata[0].name
@@ -74,45 +80,3 @@ resource "helm_release" "traefik_options" {
   depends_on = [helm_release.traefik]
 }
 
-resource "kubernetes_manifest" "sts_header" {
-  manifest = {
-    apiVersion = "traefik.containo.us/v1alpha1"
-    kind       = "Middleware"
-    metadata = {
-      name = "sts-header"
-    }
-    spec = {
-      headers = {
-        stsSeconds           = 31536000
-        stsIncludeSubdomains = true
-        stsPreload           = true
-      }
-    }
-  }
-
-  depends_on = [helm_release.traefik]
-}
-
-resource "kubernetes_manifest" "tls_options" {
-  manifest = {
-    apiVersion = "traefik.containo.us/v1alpha1"
-    kind       = "TLSOption"
-    metadata = {
-      name   = "default"
-      labels = local.ns_labels
-    }
-    spec = {
-      minVersion = "VersionTLS12"
-      cipherSuites = [
-        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
-        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
-      ]
-    }
-  }
-
-  depends_on = [helm_release.traefik]
-}
