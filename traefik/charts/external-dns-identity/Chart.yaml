@@ -1,0 +1,7 @@
+apiVersion: v2
+name: externalk-dns-identity
+description: External DNS identity
+
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

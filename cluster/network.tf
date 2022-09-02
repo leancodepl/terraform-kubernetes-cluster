@@ -8,13 +8,13 @@ resource "azurerm_virtual_network" "cluster" {
   tags = local.tags
 }
 
-resource "azurerm_subnet" "node_pool" {
-  name                 = "node-pool"
+resource "azurerm_subnet" "default_node_pool" {
+  name                 = "default-node-pool"
   resource_group_name  = azurerm_resource_group.cluster.name
   virtual_network_name = azurerm_virtual_network.cluster.name
 
-  address_prefixes  = [cidrsubnet(var.address_space, var.node_pool_network_size, 0)]
-  service_endpoints = ["Microsoft.KeyVault", "Microsoft.Sql"]
+  address_prefixes  = [cidrsubnet(var.address_space, var.default_node_pool_subnet_size, 0)]
+  service_endpoints = var.default_node_pool_service_endpoints
 }
 
 resource "azurerm_virtual_network_peering" "to_outside" {
