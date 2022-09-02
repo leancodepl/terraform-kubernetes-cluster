@@ -8,8 +8,9 @@ terraform {
 
 locals {
   ns_labels = {
-    importance = "high",
-    kind       = "system",
+    importance = "high"
+    kind       = "system"
+    app        = "external-dns"
   }
 }
 

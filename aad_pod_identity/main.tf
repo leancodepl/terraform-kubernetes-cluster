@@ -7,7 +7,8 @@ terraform {
 
 locals {
   ns_labels = {
-    importance = "high",
-    kind       = "system",
+    importance = "high"
+    kind       = "system"
+    app        = "aad-pod-identity"
   }
 }
