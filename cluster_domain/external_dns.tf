@@ -1,22 +1,13 @@
-resource "kubernetes_namespace" "external_dns" {
-  metadata {
-    name   = "external-dns"
-    labels = local.ns_labels
-  }
-}
-
 locals {
   external_dns_identity_name = "external-dns-identity"
 
-  external_dns_config = merge(var.config, {
+  external_dns_resources = {
     "resources.requests.cpu"    = var.resources.requests.cpu,
     "resources.requests.memory" = var.resources.requests.memory,
     "resources.limits.cpu"      = var.resources.limits.cpu,
     "resources.limits.memory"   = var.resources.limits.memory,
-
-    "sources[0]" = "service",
-    "sources[1]" = "ingress",
-
+  }
+  external_dns_config_aks = {
     "provider"   = "azure",
     "registry"   = "txt",
     "txtOwnerId" = "external-dns-${var.plugin.prefix}-k8s",
@@ -27,10 +18,25 @@ locals {
     "azure.useManagedIdentityExtension" = true,
 
     "podLabels.aadpodidbinding" = local.external_dns_identity_name,
+  }
+  external_dns_config_basic = {
+    "sources[0]" = "service",
+    "sources[1]" = "ingress",
 
     "logFormat" = "json",
     "logLevel"  = "info",
-  })
+  }
+}
+
+locals {
+  external_dns_config = merge(local.external_dns_resources, local.external_dns_config_basic, var.config, local.external_dns_config_aks)
+}
+
+resource "kubernetes_namespace" "external_dns" {
+  metadata {
+    name   = "external-dns"
+    labels = local.ns_labels
+  }
 }
 
 resource "helm_release" "external_dns" {

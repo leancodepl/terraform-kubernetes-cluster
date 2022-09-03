@@ -1,13 +1,5 @@
 locals {
-  datadog_config = merge(var.datadog_config, {
-    # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
-    "datadog.kubelet.host.valueFrom.fieldRef.fieldPath" = "spec.nodeName"
-    "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
-    "datadog.kubelet.tlsVerify"                         = false
-
-    # As of AKS 1.19, containerd is the default runtime and we can disable Docker
-    "datadog.criSocketPath" = "/var/run/containerd/containerd.sock",
-
+  datadog_resources = {
     "agents.containers.agent.resources.requests.cpu"    = var.datadog_resources.requests.cpu,
     "agents.containers.agent.resources.requests.memory" = var.datadog_resources.requests.memory,
     "agents.containers.agent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
@@ -22,7 +14,20 @@ locals {
     "agents.containers.traceAgent.resources.requests.memory" = var.datadog_resources.requests.memory,
     "agents.containers.traceAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
     "agents.containers.traceAgent.resources.limits.memory"   = var.datadog_resources.limits.memory,
-  })
+  }
+  datadog_aks = {
+    # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
+    "datadog.kubelet.host.valueFrom.fieldRef.fieldPath" = "spec.nodeName"
+    "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
+    "datadog.kubelet.tlsVerify"                         = false
+
+    # As of AKS 1.19, containerd is the default runtime and we can disable Docker
+    "datadog.criSocketPath" = "/var/run/containerd/containerd.sock",
+  }
+}
+
+locals {
+  datadog_config = merge(local.datadog_resources, var.datadog_config, local.datadog_aks)
 }
 
 # See: https://github.com/DataDog/helm-charts/tree/master/charts/datadog

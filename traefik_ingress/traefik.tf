@@ -1,13 +1,11 @@
 locals {
-  traefik_args = concat([
-    "--certificatesresolvers.le.acme.storage=/data/acme.json",
-    "--certificatesresolvers.le.acme.httpChallenge",
-    "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
-    "--certificatesresolvers.le.acme.email=${var.acme_mail}",
-    "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
-    "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
-  ], var.args)
-  traefik_config_forced = merge(var.config, {
+  traefik_resources = {
+    "resources.requests.cpu"    = var.resources.requests.cpu,
+    "resources.requests.memory" = var.resources.requests.memory,
+    "resources.limits.cpu"      = var.resources.limits.cpu,
+    "resources.limits.memory"   = var.resources.limits.memory,
+  }
+  traefik_config_aks = {
     "ingressRoute.dashboard.enabled"                       = false,
     "persistence.accessMode"                               = "ReadWriteMany",
     "persistence.enabled"                                  = true,
@@ -20,17 +18,25 @@ locals {
 
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = var.plugin.cluster_resource_group_name,
     "service.spec.loadBalancerIP"                                                             = azurerm_public_ip.traefik_public_ip.ip_address,
-  })
-  traefik_config = merge({
-    "resources.requests.cpu"    = var.resources.requests.cpu,
-    "resources.requests.memory" = var.resources.requests.memory,
-    "resources.limits.cpu"      = var.resources.limits.cpu,
-    "resources.limits.memory"   = var.resources.limits.memory,
-
+  }
+  traefik_config_logging = {
     "logs.general.level"  = "INFO",
     "logs.access.enabled" = false,
     "logs.general.format" = "json",
-  }, local.traefik_config_forced)
+  }
+}
+
+locals {
+  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, var.config, local.traefik_config_aks)
+
+  traefik_args = concat([
+    "--certificatesresolvers.le.acme.storage=/data/acme.json",
+    "--certificatesresolvers.le.acme.httpChallenge",
+    "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
+    "--certificatesresolvers.le.acme.email=${var.acme_mail}",
+    "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
+    "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
+  ], var.args)
 }
 
 resource "kubernetes_namespace" "traefik" {
