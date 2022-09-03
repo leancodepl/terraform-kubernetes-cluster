@@ -1,161 +1,89 @@
-variable "name_prefix" {
-  description = "The prefix used in AD configuration"
-  type        = string
+variable "plugin" {
+  description = "The output of cluster module for plugins."
+  type = object({
+    prefix = string
+    tags   = map(string)
+  })
 }
 
-variable "prefix" {
-  description = "Resources prefix"
-  type        = string
+variable "datadog_keys" {
+  description = "A DataDog API and APP key for the DataDog agent and OT collector."
+  sensitive   = true
+  type = object({
+    api = string
+    app = string
+  })
 }
 
-variable "resource_group_name" {
-  description = "The name of resource group"
-  type        = string
-}
-
-variable "resource_group_location" {
-  description = "The location of resource group"
-  type        = string
-}
-
-variable "domain" {
-  description = "Domain used by the cluster"
-  type        = string
-}
-
-variable "address_space" {
-  description = "Cluster address space, specified in CIDR notation. It is assumed to be /16 or less"
-  type        = string
-}
-
-variable "node_pool_network_size" {
-  description = "The size (in bits) of the node pool subnet. It is cidrsubnet-ted to the address space. Defaults to 4."
-  type        = number
-  default     = 4
-}
-
-variable "tags" {
-  description = "Additional tags used by the cluster"
+variable "datadog_config" {
+  description = "A configuration of DataDog Helm chart."
   type        = map(any)
+  default     = {}
 }
 
-variable "cluster_config" {
-  description = "Configuration of the cluster"
+variable "datadog_resources" {
+  description = "A resource requests/limits for DataDog pods."
   type = object({
-    version        = string,
-    loadbalancer   = string,
-    network_policy = string,
-    default_pool = object({
-      vm_size             = string,
-      os_disk_size_gb     = string,
-      max_pods            = number,
-      count               = number,
-      min_count           = number,
-      max_count           = number,
-      enable_auto_scaling = bool,
-      version             = string,
-      node_taints         = list(string)
-    }),
-    access = object({
-      admin_access_group   = string,
-      dev_access_group     = string,
-      authorized_ip_ranges = list(string)
+    requests = object({
+      memory = string,
+      cpu    = string
+    })
+    limits = object({
+      memory = string,
+      cpu    = string
     })
   })
+  default = {
+    requests = {
+      cpu    = "50m"
+      memory = "200Mi"
+    }
+    limits = {
+      cpu    = "0.5"
+      memory = "512Mi"
+    }
+  }
 }
 
-variable "peered_network" {
-  description = "The id of the network that the cluster network will peer to"
-  default     = ""
+variable "opentelemetry_image" {
+  description = "The image used by OTelCol agent."
   type        = string
+  default     = "otel/opentelemetry-collector-contrib:0.59.0"
 }
 
-variable "datadog" {
-  description = "DataDog configuration"
+variable "opentelemetry_resources" {
+  description = "A resource requests/limits for OTelCol agent."
   type = object({
-    secret = string,
-    config = map(any)
-  })
-}
-
-variable "traefik" {
-  description = "Traefik configuration"
-  type = object({
-    args      = list(string),
-    config    = map(any),
-    acme_mail = string,
-  })
-  default = {
-    args      = [],
-    config    = {},
-    acme_mail = "",
-  }
-}
-
-variable "aad_pod_identity" {
-  description = "AAD Pod Identity configuration"
-  type = object({
-    config = map(any),
-  })
-  default = {
-    config = {}
-  }
-}
-
-variable "deploy_external_dns" {
-  description = "Whether to deploy External DNS"
-  type        = bool
-  default     = true
-}
-
-variable "deploy_kube_state_metrics" {
-  description = "Whether to deploy kube-state-metrics"
-  type        = bool
-  default     = true
-}
-
-variable "deploy_opentelemetry_collector" {
-  description = "Whether to deploy opentelemetry-collector"
-  type        = bool
-  default     = true
-}
-
-variable "opentelemetry" {
-  description = "OpenTelemetry Collector configuration"
-  type = object({
-    image = string,
-    limiter = object({
-      ballast_size_mib = number,
-      limit_mib        = number,
-      spike_limit_mib  = number,
-    }),
-    resources = object({
-      limits = object({
-        cpu    = string,
-        memory = string,
-      }),
-      requests = object({
-        cpu    = string,
-        memory = string,
-      }),
+    requests = object({
+      memory = string,
+      cpu    = string
+    })
+    limits = object({
+      memory = string,
+      cpu    = string
     })
   })
   default = {
-    image = "leancode.azurecr.io/otelcol:v0.2.0",
-    limiter = {
-      ballast_size_mib = 165,
-      limit_mib        = 400,
-      spike_limit_mib  = 100,
-    },
-    resources = {
-      limits = {
-        cpu    = "500m",
-        memory = "500Mi",
-      },
-      requests = {
-        cpu    = "100m",
-        memory = "100Mi",
-      },
-    },
+    requests = {
+      cpu    = "10m"
+      memory = "20Mi"
+    }
+    limits = {
+      cpu    = "100m"
+      memory = "50Mi"
+    }
   }
 }
+
+variable "opentelemetry_config" {
+  description = "The configuration of OTelCol agent."
+  type        = map(any)
+  default     = null
+}
+
+variable "opentelemetry_ports" {
+  description = "A list of open ports on OTelCol agent."
+  type        = set(number)
+  default     = [55680, 55681]
+}
+
