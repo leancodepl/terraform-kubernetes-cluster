@@ -55,42 +55,33 @@ resource "helm_release" "external_dns" {
     }
   }
 
-  depends_on = [kubernetes_manifest.identity, kubernetes_manifest.binding]
+  depends_on = [helm_release.external_dns_identity]
 }
 
-resource "kubernetes_manifest" "identity" {
-  manifest = {
-    apiVersion = "aadpodidentity.k8s.io/v1"
-    kind       = "AzureIdentity"
-    metadata = {
-      name      = local.external_dns_identity_name
-      namespace = kubernetes_namespace.external_dns.metadata[0].name
-      labels    = local.ns_labels
-      annotations = {
-        "aadpodidentity.k8s.io/Behavior" = "namespaced"
-      }
-    }
-    spec = {
-      type       = 0
-      resourceID = var.plugin.cluster_identity_id
-      clientID   = var.plugin.cluster_identity_client_id
-    }
+
+// We can't move to kubernetes_manifest - to apply a manifest we must know it's schema during plan
+// phase. This means that the CRD (thus the content of this chart) needs to exists prior to
+// the application and the cluster that we are planning on must also be available. This means that
+// the `helm_release.external_dns_identity` resource needs to be applied _after_ the cluster is
+// running, which requires two-pass `apply`. Having a chart bypasses this requirement (as Helm
+// provider does not validate the resources up-front).
+// Provider/TF bug to track: https://github.com/hashicorp/terraform-provider-kubernetes/issues/1782
+resource "helm_release" "external_dns_identity" {
+  name      = "external-dns-identity"
+  namespace = kubernetes_namespace.external_dns.metadata[0].name
+  chart     = "${path.module}/charts/external-dns-identity"
+
+  set {
+    name  = "identityName"
+    value = local.external_dns_identity_name
   }
-
-}
-
-resource "kubernetes_manifest" "binding" {
-  manifest = {
-    apiVersion = "aadpodidentity.k8s.io/v1"
-    kind       = "AzureIdentityBinding"
-    metadata = {
-      name      = "${local.external_dns_identity_name}-binding"
-      namespace = kubernetes_namespace.external_dns.metadata[0].name
-      labels    = local.ns_labels
-    }
-    spec = {
-      azureIdentity = local.external_dns_identity_name
-      selector      = local.external_dns_identity_name
-    }
+  set {
+    name  = "userIdentityId"
+    value = var.plugin.cluster_identity_id
+  }
+  set {
+    name  = "userIdentityClientId"
+    value = var.plugin.cluster_identity_client_id
   }
 }
+
