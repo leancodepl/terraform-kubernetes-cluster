@@ -43,8 +43,8 @@ output "kubernetes_provider" {
 output "networking" {
   description = "The IDs of networking objects."
   value = {
-    vnet_id           = azurerm_virtual_network.cluster.id
-    default_node_pool = azurerm_subnet.default_node_pool.id
+    vnet_id              = azurerm_virtual_network.cluster.id
+    default_node_pool_id = azurerm_subnet.default_node_pool.id
   }
 }
 
