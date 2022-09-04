@@ -96,7 +96,7 @@ variable "sku_tier" {
   default     = "Free"
 
   validation {
-    condition     = var.sku_tier == "Free" || var.sku_tier == "Pair"
+    condition     = var.sku_tier == "Free" || var.sku_tier == "Paid"
     error_message = "The SKU tier might be `Free` or `Paid`."
   }
 }
