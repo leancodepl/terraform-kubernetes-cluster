@@ -5,6 +5,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   dns_prefix         = var.prefix
   kubernetes_version = var.cluster_version
+  sku_tier           = var.sku_tier
 
   default_node_pool {
     name = "default"

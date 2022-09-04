@@ -89,3 +89,14 @@ variable "peered_network" {
   default     = ""
   type        = string
 }
+
+variable "sku_tier" {
+  description = "The SKU Tier that should be used for this Kubernetes Cluster."
+  type        = string
+  default     = "Free"
+
+  validation {
+    condition     = var.sku_tier == "Free" || var.sku_tier == "Pair"
+    error_message = "The SKU tier might be `Free` or `Paid`."
+  }
+}
