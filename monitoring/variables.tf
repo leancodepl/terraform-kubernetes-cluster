@@ -70,7 +70,7 @@ variable "opentelemetry_resources" {
     }
     limits = {
       cpu    = "100m"
-      memory = "50Mi"
+      memory = "100Mi"
     }
   }
 }
@@ -84,7 +84,7 @@ variable "opentelemetry_config" {
 variable "opentelemetry_ports" {
   description = "A list of open ports on OTelCol agent."
   type        = set(number)
-  default     = [55680, 55681]
+  default     = [55680, 55681, 14268]
 }
 
 variable "opentelemetry_tolerations" {

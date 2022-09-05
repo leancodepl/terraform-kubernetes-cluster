@@ -23,6 +23,10 @@ locals {
       k8sattributes = {
         passthrough = true
       }
+      memory_limiter = {
+        check_interval   = "5s"
+        limit_percentage = 50
+      }
       resourcedetection = {
         detectors = [
           "azure",
@@ -43,6 +47,13 @@ locals {
           }
         }
       }
+      jaeger = {
+        protocols = {
+          thrift_http = {
+            endpoint = "0.0.0.0:14268"
+          }
+        }
+      }
     }
     service = {
       extensions = ["health_check"]
@@ -50,6 +61,7 @@ locals {
         metrics = {
           exporters = ["datadog"]
           processors = [
+            "memory_limiter",
             "resourcedetection",
             "k8sattributes",
             "batch",
@@ -59,11 +71,12 @@ locals {
         traces = {
           exporters = ["datadog"]
           processors = [
+            "memory_limiter",
             "batch",
             "resourcedetection",
             "k8sattributes",
           ]
-          receivers = ["otlp"]
+          receivers = ["otlp", "jaeger"]
         }
       }
     }
