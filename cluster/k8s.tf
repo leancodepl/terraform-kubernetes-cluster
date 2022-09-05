@@ -21,7 +21,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
     vnet_subnet_id = azurerm_subnet.default_node_pool.id
 
-    orchestrator_version = var.default_pool.version
+    orchestrator_version = var.default_pool.version == null ? var.cluster_version : var.default_pool.version
     node_taints          = var.default_pool.node_taints
 
     type = "VirtualMachineScaleSets"
