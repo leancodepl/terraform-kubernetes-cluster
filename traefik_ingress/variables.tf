@@ -57,3 +57,9 @@ variable "resources" {
     }
   }
 }
+
+variable "ip_zones" {
+  description = "A list of availability zones where the ingress IP address will be allocated."
+  type        = set(number)
+  default     = null
+}
