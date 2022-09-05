@@ -9,7 +9,7 @@ resource "azurerm_virtual_network" "cluster" {
 }
 
 resource "azurerm_subnet" "default_node_pool" {
-  name                 = "default-node-pool"
+  name                 = "node-pool" # We keep this name for back-compat purposes
   resource_group_name  = azurerm_resource_group.cluster.name
   virtual_network_name = azurerm_virtual_network.cluster.name
 
