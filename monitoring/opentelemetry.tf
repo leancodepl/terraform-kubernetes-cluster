@@ -178,6 +178,17 @@ resource "kubernetes_daemonset" "opentelemetry_collector" {
             }
           }
         }
+
+        dynamic "toleration" {
+          for_each = var.opentelemetry_tolerations
+
+          content {
+            key      = toleration.value.key
+            operator = toleration.value.operator
+            value    = toleration.value.value
+            effect   = toleration.value.effect
+          }
+        }
       }
     }
   }

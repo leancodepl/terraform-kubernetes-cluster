@@ -3,6 +3,8 @@ terraform {
     kubernetes = ">= 2.13"
     helm       = ">= 2.6"
   }
+
+  experiments = [module_variable_optional_attrs]
 }
 
 locals {
