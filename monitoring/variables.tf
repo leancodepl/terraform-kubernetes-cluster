@@ -77,7 +77,7 @@ variable "opentelemetry_resources" {
 
 variable "opentelemetry_config" {
   description = "The configuration of OTelCol agent."
-  type        = map(any)
+  type        = string
   default     = null
 }
 

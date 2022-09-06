@@ -91,7 +91,7 @@ resource "kubernetes_secret" "opentelemetry_config" {
   }
 
   data = {
-    agent_config    = yamlencode(var.opentelemetry_config == null ? local.default_opentelemetry_config : var.opentelemetry_config)
+    agent_config    = var.opentelemetry_config == null ? yamlencode(local.default_opentelemetry_config) : var.opentelemetry_config
     datadog_api_key = var.datadog_keys.api
   }
 }
