@@ -24,13 +24,14 @@ locals {
         passthrough = true
       }
       memory_limiter = {
-        check_interval   = "5s"
-        limit_percentage = 50
+        check_interval         = "5s"
+        limit_percentage       = 50
+        spike_limit_percentage = 25
       }
       resourcedetection = {
         detectors = [
           "azure",
-          "env",
+          "aks",
         ]
         override = false
         timeout  = "5s"
@@ -57,6 +58,11 @@ locals {
     }
     service = {
       extensions = ["health_check"]
+      telemetry = {
+        logs = {
+          encoding = "json"
+        }
+      }
       pipelines = {
         metrics = {
           exporters = ["datadog"]
@@ -101,9 +107,6 @@ resource "kubernetes_daemonset" "opentelemetry_collector" {
     name      = "opentelemetry-collector"
     namespace = kubernetes_namespace.main.metadata[0].name
     labels    = local.otel_labels
-    annotations = {
-      "config-hash" = sha256(kubernetes_secret.opentelemetry_config.data.agent_config)
-    }
   }
 
   spec {
@@ -119,6 +122,9 @@ resource "kubernetes_daemonset" "opentelemetry_collector" {
         labels = {
           app       = "opentelemetry-collector"
           component = "agent"
+        }
+        annotations = {
+          "config-hash" = sha256(kubernetes_secret.opentelemetry_config.data.agent_config)
         }
       }
 
