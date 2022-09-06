@@ -15,6 +15,12 @@ locals {
     "agents.containers.traceAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
     "agents.containers.traceAgent.resources.limits.memory"   = var.datadog_resources.limits.memory,
   }
+  datadog_features = {
+    "datadog.otlp.receiver.protocols.grpc.enabled"  = true,
+    "datadog.otlp.receiver.protocols.grpc.endpoint" = "0.0.0.0:55680",
+    "datadog.otlp.receiver.protocols.http.enabled"  = true,
+    "datadog.otlp.receiver.protocols.http.endpoint" = "0.0.0.0:55681",
+  }
   datadog_aks = {
     # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
     "datadog.kubelet.host.valueFrom.fieldRef.fieldPath" = "spec.nodeName"
