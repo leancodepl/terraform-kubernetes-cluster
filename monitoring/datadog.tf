@@ -1,19 +1,21 @@
 locals {
   datadog_resources = {
-    "agents.containers.agent.resources.requests.cpu"    = var.datadog_resources.requests.cpu,
-    "agents.containers.agent.resources.requests.memory" = var.datadog_resources.requests.memory,
-    "agents.containers.agent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
-    "agents.containers.agent.resources.limits.memory"   = var.datadog_resources.limits.memory,
+    "agents.containers.agent.resources.requests.cpu"    = var.datadog_resources.requests.cpu
+    "agents.containers.agent.resources.requests.memory" = var.datadog_resources.requests.memory
+    "agents.containers.agent.resources.limits.cpu"      = var.datadog_resources.limits.cpu
+    "agents.containers.agent.resources.limits.memory"   = var.datadog_resources.limits.memory
 
-    "agents.containers.processAgent.resources.requests.cpu"    = var.datadog_resources.requests.cpu,
-    "agents.containers.processAgent.resources.requests.memory" = var.datadog_resources.requests.memory,
-    "agents.containers.processAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
-    "agents.containers.processAgent.resources.limits.memory"   = var.datadog_resources.limits.memory,
+    "agents.containers.processAgent.resources.requests.cpu"    = var.datadog_resources.requests.cpu
+    "agents.containers.processAgent.resources.requests.memory" = var.datadog_resources.requests.memory
+    "agents.containers.processAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu
+    "agents.containers.processAgent.resources.limits.memory"   = var.datadog_resources.limits.memory
 
-    "agents.containers.traceAgent.resources.requests.cpu"    = var.datadog_resources.requests.cpu,
-    "agents.containers.traceAgent.resources.requests.memory" = var.datadog_resources.requests.memory,
-    "agents.containers.traceAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu,
-    "agents.containers.traceAgent.resources.limits.memory"   = var.datadog_resources.limits.memory,
+    "agents.containers.traceAgent.resources.requests.cpu"    = var.datadog_resources.requests.cpu
+    "agents.containers.traceAgent.resources.requests.memory" = var.datadog_resources.requests.memory
+    "agents.containers.traceAgent.resources.limits.cpu"      = var.datadog_resources.limits.cpu
+    "agents.containers.traceAgent.resources.limits.memory"   = var.datadog_resources.limits.memory
+
+    "agents.priorityClassName" = "system-cluster-critical"
   }
   datadog_features = {
     "datadog.otlp.receiver.protocols.grpc.enabled"  = true,
