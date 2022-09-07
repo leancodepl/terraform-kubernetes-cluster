@@ -1,83 +1,82 @@
-locals {
-  default_opentelemetry_config = {
-    exporters = {
-      otlp = {
-        endpoint = "$${HOST_IP}:55680"
-      }
-    }
-
-    extensions = {
-      health_check = {}
-    }
-    processors = {
-      batch = {
-        timeout = "10s"
-      }
-      k8sattributes = {
-        passthrough = true
-      }
-      memory_limiter = {
-        check_interval         = "5s"
-        limit_percentage       = 50
-        spike_limit_percentage = 25
-      }
-      resourcedetection = {
-        detectors = [
-          "azure",
-          "aks",
-        ]
-        override = false
-        timeout  = "5s"
-      }
-    }
-    receivers = {
-      jaeger = {
-        protocols = {
-          thrift_http = {
-            endpoint = "0.0.0.0:14268"
-          }
-        }
-      }
-    }
-    service = {
-      extensions = ["health_check"]
-      telemetry = {
-        logs = {
-          encoding = "json"
-        }
-      }
-      pipelines = {
-        traces = {
-          exporters = ["otlp"]
-          processors = [
-            "memory_limiter",
-            "batch",
-            "resourcedetection",
-            "k8sattributes",
-          ]
-          receivers = ["jaeger"]
-        }
-      }
-    }
-  }
-}
-
 resource "kubernetes_config_map" "opentelemetry_config" {
   metadata {
     name      = "opentelemetry-config"
-    namespace = kubernetes_namespace.main.metadata[0].name
+    namespace = var.monitoring_plugin.namespace_name
     labels    = local.otel_labels
   }
 
   data = {
-    agent_config = var.opentelemetry_config == null ? yamlencode(local.default_opentelemetry_config) : var.opentelemetry_config
+    agent_config = yamlencode({
+      exporters = {
+        otlp = {
+          endpoint = "$${AGENT_HOST_IP}:55680"
+          tls = {
+            insecure = true
+          }
+        }
+      }
+
+      extensions = {
+        health_check = {}
+      }
+      processors = {
+        batch = {
+          timeout = "10s"
+        }
+        k8sattributes = {
+          passthrough = true
+        }
+        memory_limiter = {
+          check_interval         = "5s"
+          limit_percentage       = 50
+          spike_limit_percentage = 25
+        }
+        resourcedetection = {
+          detectors = [
+            "azure",
+            "aks",
+          ]
+          override = false
+          timeout  = "5s"
+        }
+      }
+      receivers = {
+        jaeger = {
+          protocols = {
+            thrift_http = {
+              endpoint = "0.0.0.0:14268"
+            }
+          }
+        }
+      }
+      service = {
+        extensions = ["health_check"]
+        telemetry = {
+          logs = {
+            encoding = "json"
+          }
+        }
+        pipelines = {
+          traces = {
+            exporters = ["otlp"]
+            processors = [
+              "memory_limiter",
+              "batch",
+              "resourcedetection",
+              "k8sattributes",
+            ]
+            receivers = ["jaeger"]
+          }
+        }
+      }
+    })
   }
 }
 
 resource "kubernetes_deployment_v1" "opentelemetry_collector" {
   metadata {
     name      = "opentelemetry-collector"
-    namespace = kubernetes_namespace.main.metadata[0].name
+    namespace = var.monitoring_plugin.namespace_name
     labels    = local.otel_labels
   }
 
@@ -119,17 +118,13 @@ resource "kubernetes_deployment_v1" "opentelemetry_collector" {
 
           args = ["--config", "/conf/otel-agent-config.yaml"]
 
-          dynamic "port" {
-            for_each = var.opentelemetry_ports
-
-            content {
-              host_port      = port.key
-              container_port = port.key
-            }
+          port {
+            container_port = 14268
+            host_port      = 14268
           }
 
           env {
-            name = "HOST_IP"
+            name = "AGENT_HOST_IP"
             value_from {
               field_ref {
                 field_path = "status.hostIP"
@@ -176,7 +171,7 @@ resource "kubernetes_deployment_v1" "opentelemetry_collector" {
 resource "kubernetes_service_v1" "opentelemetry_service" {
   metadata {
     name      = "opentelemetry-svc"
-    namespace = kubernetes_namespace.main.metadata[0].name
+    namespace = var.monitoring_plugin.namespace_name
     labels    = local.otel_labels
   }
 
