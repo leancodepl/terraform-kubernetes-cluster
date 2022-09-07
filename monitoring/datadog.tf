@@ -33,7 +33,7 @@ locals {
 }
 
 locals {
-  datadog_config = merge(local.datadog_resources, var.datadog_config, local.datadog_aks)
+  datadog_config = merge(local.datadog_resources, local.datadog_features, var.datadog_config, local.datadog_aks)
 }
 
 # See: https://github.com/DataDog/helm-charts/tree/master/charts/datadog
