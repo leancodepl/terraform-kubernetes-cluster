@@ -39,6 +39,20 @@ resource "kubernetes_config_map" "opentelemetry_config" {
           override = false
           timeout  = "5s"
         }
+        "filter/traefik-ping" = {
+          spans = {
+            exclude = {
+              match_type = "strict"
+              services   = ["traefik"]
+              attributes = [
+                {
+                  Key   = "http.url"
+                  Value = "/ping"
+                }
+              ]
+            }
+          }
+        }
       }
       receivers = {
         jaeger = {
@@ -61,6 +75,7 @@ resource "kubernetes_config_map" "opentelemetry_config" {
             exporters = ["otlp"]
             processors = [
               "memory_limiter",
+              "filter/traefik-ping",
               "batch",
               "resourcedetection",
               "k8sattributes",
