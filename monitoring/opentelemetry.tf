@@ -74,7 +74,7 @@ resource "kubernetes_config_map" "opentelemetry_config" {
   }
 }
 
-resource "kubernetes_daemonset" "opentelemetry_collector" {
+resource "kubernetes_deployment_v1" "opentelemetry_collector" {
   metadata {
     name      = "opentelemetry-collector"
     namespace = kubernetes_namespace.main.metadata[0].name
@@ -159,18 +159,29 @@ resource "kubernetes_daemonset" "opentelemetry_collector" {
             }
           }
         }
-
-        dynamic "toleration" {
-          for_each = var.opentelemetry_tolerations
-
-          content {
-            key      = toleration.value.key
-            operator = toleration.value.operator
-            value    = toleration.value.value
-            effect   = toleration.value.effect
-          }
-        }
       }
     }
+  }
+}
+
+resource "kubernetes_service_v1" "opentelemetry_service" {
+  metadata {
+    name      = "opentelemetry-svc"
+    namespace = kubernetes_namespace.main.metadata[0].name
+    labels    = local.otel_labels
+  }
+
+  spec {
+    selector = {
+      app       = "opentelemetry-collector"
+      component = "agent"
+    }
+
+    port {
+      port        = 14268
+      target_port = 14268
+    }
+
+    type = "ClusterIP"
   }
 }

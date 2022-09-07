@@ -87,14 +87,3 @@ variable "opentelemetry_ports" {
   default     = [14268]
 }
 
-variable "opentelemetry_tolerations" {
-  description = "A list of tolerations for OTelCol agent."
-  type = list(object({
-    key      = string,
-    operator = string,
-    value    = optional(string),
-    effect   = string,
-  }))
-  default = []
-}
-
