@@ -29,6 +29,8 @@ locals {
     "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
     "datadog.kubelet.tlsVerify"                         = false
 
+    "datadog.tags[0]" = "env:${var.plugin.prefix}"
+
     # As of AKS 1.19, containerd is the default runtime and we can disable Docker
     "datadog.criSocketPath" = "/var/run/containerd/containerd.sock",
   }
