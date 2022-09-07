@@ -128,6 +128,15 @@ resource "kubernetes_deployment_v1" "opentelemetry_collector" {
             }
           }
 
+          env {
+            name = "HOST_IP"
+            value_from {
+              field_ref {
+                field_path = "status.hostIP"
+              }
+            }
+          }
+
           resources {
             limits = {
               cpu    = var.opentelemetry_resources.limits.cpu
