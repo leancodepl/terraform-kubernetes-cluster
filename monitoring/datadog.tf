@@ -22,6 +22,9 @@ locals {
     "datadog.otlp.receiver.protocols.grpc.endpoint" = "0.0.0.0:55680",
     "datadog.otlp.receiver.protocols.http.enabled"  = true,
     "datadog.otlp.receiver.protocols.http.endpoint" = "0.0.0.0:55681",
+
+    "datadog.checksCardinality"        = "orchestrator",
+    "datadog.dogstatsd.tagCardinality" = "orchestrator",
   }
   datadog_aks = {
     # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
