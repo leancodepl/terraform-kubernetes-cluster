@@ -22,6 +22,9 @@ locals {
     "datadog.otlp.receiver.protocols.grpc.endpoint" = "0.0.0.0:55680",
     "datadog.otlp.receiver.protocols.http.enabled"  = true,
     "datadog.otlp.receiver.protocols.http.endpoint" = "0.0.0.0:55681",
+
+    "datadog.checksCardinality"        = "orchestrator",
+    "datadog.dogstatsd.tagCardinality" = "orchestrator",
   }
   datadog_aks = {
     # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
@@ -45,7 +48,7 @@ resource "helm_release" "datadog_agent" {
   name       = "datadog"
   repository = "https://helm.datadoghq.com"
   chart      = "datadog"
-  version    = "3.0.0"
+  version    = "3.2.0"
 
   namespace = kubernetes_namespace.main.metadata[0].name
 
