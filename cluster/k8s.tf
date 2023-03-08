@@ -25,6 +25,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     node_taints          = var.default_pool.node_taints
 
     type = "VirtualMachineScaleSets"
+
+    tags = local.tags
   }
 
   identity {
@@ -61,4 +63,3 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 data "azurerm_resource_group" "cluster_node_group" {
   name = azurerm_kubernetes_cluster.cluster.node_resource_group
 }
-
