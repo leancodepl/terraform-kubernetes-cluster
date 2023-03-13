@@ -25,6 +25,9 @@ locals {
 
     "datadog.checksCardinality"        = "orchestrator",
     "datadog.dogstatsd.tagCardinality" = "orchestrator",
+
+    "datadog.env[0].name"  = "DD_LOG_FORMAT_JSON",
+    "datadog.env[0].value" = true,
   }
   datadog_aks = {
     # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
