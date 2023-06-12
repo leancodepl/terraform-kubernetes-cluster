@@ -52,6 +52,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   azure_policy_enabled             = var.network.network_policy != null
   http_application_routing_enabled = false
+  oidc_issuer_enabled              = true
+  workload_identity_enabled        = true
 
   tags = local.tags
 
