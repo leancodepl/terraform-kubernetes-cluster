@@ -51,7 +51,7 @@ resource "helm_release" "traefik" {
 
   repository = "https://helm.traefik.io/traefik"
   chart      = "traefik"
-  version    = "21.1.0"
+  version    = "23.1.0"
 
   namespace = kubernetes_namespace.traefik.metadata[0].name
 
@@ -85,4 +85,3 @@ resource "helm_release" "traefik_options" {
 
   depends_on = [helm_release.traefik]
 }
-
