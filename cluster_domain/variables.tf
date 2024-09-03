@@ -2,7 +2,7 @@ variable "plugin" {
   description = "The output of cluster module for plugins."
   type = object({
     prefix                      = string
-    cluster_id                  = string
+    cluster_name                = string
     cluster_resource_group_name = string
     cluster_identity_id         = string
     cluster_identity_client_id  = string
