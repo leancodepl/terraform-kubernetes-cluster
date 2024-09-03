@@ -12,12 +12,15 @@ locals {
     "registry"   = "txt",
     "txtOwnerId" = "external-dns-${var.plugin.prefix}-k8s",
 
-    "azure.tenantId"                    = data.azurerm_client_config.current.tenant_id,
-    "azure.subscriptionId"              = data.azurerm_client_config.current.subscription_id,
-    "azure.resourceGroup"               = var.plugin.cluster_resource_group_name,
-    "azure.useManagedIdentityExtension" = true,
+    "azure.tenantId"                     = data.azurerm_client_config.current.tenant_id,
+    "azure.subscriptionId"               = data.azurerm_client_config.current.subscription_id,
+    "azure.resourceGroup"                = var.plugin.cluster_resource_group_name,
+    "azure.useWorkloadIdentityExtension" = true,
 
-    "podLabels.aadpodidbinding" = local.external_dns_identity_name,
+    "serviceAccount.labels.azure.workload.identity/use" : true
+    "serviceAccount.annotations.azure.workload.identity/client-id" : var.plugin.cluster_identity_client_id
+
+    "podLabels.azure.workload.identity/use" = true,
   }
   external_dns_config_basic = {
     "sources[0]" = "service",
@@ -83,4 +86,20 @@ resource "helm_release" "external_dns_identity" {
     name  = "userIdentityClientId"
     value = var.plugin.cluster_identity_client_id
   }
+}
+
+data "azurerm_kubernetes_cluster" "cluster" {
+  name                = var.plugin.cluster_name
+  resource_group_name = var.plugin.cluster_resource_group_name
+}
+
+
+resource "azurerm_federated_identity_credential" "identity_credential" {
+  parent_id           = var.plugin.cluster_identity_id
+  name                = "external-dns-access"
+  resource_group_name = var.plugin.cluster_resource_group_name
+
+  audience = ["api://AzureADTokenExchange"]
+  subject  = "system:serviceaccount:${kubernetes_namespace.external_dns.metadata[0].name}:external-dns"
+  issuer   = data.azurerm_kubernetes_cluster.cluster.oidc_issuer_url
 }

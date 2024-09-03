@@ -60,6 +60,7 @@ output "plugin" {
     network_config = var.network
 
     cluster_id                      = azurerm_kubernetes_cluster.cluster.id
+    cluster_name                    = azurerm_kubernetes_cluster.cluster.name
     cluster_resource_group_name     = azurerm_resource_group.cluster.name
     cluster_resource_group_location = azurerm_resource_group.cluster.location
     cluster_identity_id             = azurerm_user_assigned_identity.cluster_identity.id
