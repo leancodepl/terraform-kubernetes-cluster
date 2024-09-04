@@ -1,6 +1,4 @@
 locals {
-  external_dns_identity_name = "external-dns-identity"
-
   external_dns_resources = {
     "resources.requests.cpu"    = var.resources.requests.cpu,
     "resources.requests.memory" = var.resources.requests.memory,
@@ -71,41 +69,13 @@ resource "helm_release" "external_dns" {
 
   values = [yamlencode(local.external_dns_config_workload_identity)]
 
-  depends_on = [helm_release.external_dns_identity]
-}
-
-
-// We can't move to kubernetes_manifest - to apply a manifest we must know it's schema during plan
-// phase. This means that the CRD (thus the content of this chart) needs to exists prior to
-// the application and the cluster that we are planning on must also be available. This means that
-// the `helm_release.external_dns_identity` resource needs to be applied _after_ the cluster is
-// running, which requires two-pass `apply`. Having a chart bypasses this requirement (as Helm
-// provider does not validate the resources up-front).
-// Provider/TF bug to track: https://github.com/hashicorp/terraform-provider-kubernetes/issues/1782
-resource "helm_release" "external_dns_identity" {
-  name      = "external-dns-identity"
-  namespace = kubernetes_namespace.external_dns.metadata[0].name
-  chart     = "${path.module}/charts/external-dns-identity"
-
-  set {
-    name  = "identityName"
-    value = local.external_dns_identity_name
-  }
-  set {
-    name  = "userIdentityId"
-    value = var.plugin.cluster_identity_id
-  }
-  set {
-    name  = "userIdentityClientId"
-    value = var.plugin.cluster_identity_client_id
-  }
+  depends_on = [azurerm_federated_identity_credential.identity_credential]
 }
 
 data "azurerm_kubernetes_cluster" "cluster" {
   name                = var.plugin.cluster_name
   resource_group_name = var.plugin.cluster_resource_group_name
 }
-
 
 resource "azurerm_federated_identity_credential" "identity_credential" {
   parent_id           = var.plugin.cluster_identity_id
