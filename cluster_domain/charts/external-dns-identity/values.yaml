@@ -1,5 +1,0 @@
-nameOverride: ""
-fullnameOverride: ""
-identityName: "external-dns-identity"
-userIdentityId: ""
-userIdentityClientid: ""
