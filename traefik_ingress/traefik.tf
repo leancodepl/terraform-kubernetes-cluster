@@ -19,6 +19,12 @@ locals {
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = var.plugin.cluster_resource_group_name,
     "service.spec.loadBalancerIP"                                                             = azurerm_public_ip.traefik_public_ip.ip_address,
   }
+
+  traefik_config_monitoring = var.enable_monitoring ? {
+    "env[0].name"                         = "AGENT_HOST_IP",
+    "env[0].valueFrom.fieldRef.fieldPath" = "status.hostIP",
+  } : {}
+
   traefik_config_logging = {
     "logs.general.level"  = "INFO",
     "logs.access.enabled" = false,
@@ -27,7 +33,18 @@ locals {
 }
 
 locals {
-  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, var.config, local.traefik_config_aks)
+  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, local.traefik_config_aks, local.traefik_config_monitoring)
+
+  traefik_monitoring_args = var.enable_monitoring ? [
+    "--tracing.otlp=true",
+    "--tracing.otlp.grpc=true",
+    "--tracing.otlp.grpc.insecure=true",
+    "--tracing.otlp.grpc.endpoint=$(AGENT_HOST_IP):55680",
+    "--metrics.otlp=true",
+    "--metrics.otlp.grpc=true",
+    "--metrics.otlp.grpc.insecure=true",
+    "--metrics.otlp.grpc.endpoint=$(AGENT_HOST_IP):55680",
+  ] : []
 
   traefik_args = concat([
     "--certificatesresolvers.le.acme.storage=/data/acme.json",
@@ -36,7 +53,8 @@ locals {
     "--certificatesresolvers.le.acme.email=${var.acme_mail}",
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
-  ], var.args)
+    "--core.defaultRuleSyntax=${var.default_router_rule_syntax}",
+  ], local.traefik_monitoring_args)
 }
 
 resource "kubernetes_namespace" "traefik" {
@@ -51,7 +69,7 @@ resource "helm_release" "traefik" {
 
   repository = "https://helm.traefik.io/traefik"
   chart      = "traefik"
-  version    = "23.1.0"
+  version    = "31.0.0"
 
   namespace = kubernetes_namespace.traefik.metadata[0].name
 

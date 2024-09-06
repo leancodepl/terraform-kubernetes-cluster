@@ -15,18 +15,6 @@ variable "plugin" {
   })
 }
 
-variable "args" {
-  description = "A list of Traefik command line arguments."
-  type        = list(string)
-  default     = []
-}
-
-variable "config" {
-  description = "A configuration for the Traefik Helm chart."
-  type        = map(any)
-  default     = {}
-}
-
 variable "acme_mail" {
   description = "The e-mail address that will be used for ACME account."
   type        = string
@@ -58,8 +46,25 @@ variable "resources" {
   }
 }
 
+variable "enable_monitoring" {
+  description = "Should Traefik send traces & metrics to OTEL agent"
+  type        = bool
+  default     = true
+}
+
+
 variable "ip_zones" {
   description = "A list of availability zones where the ingress IP address will be allocated."
   type        = set(number)
   default     = null
+}
+
+variable "default_router_rule_syntax" {
+  description = "Set default router rule syntax to facilitate v2 -> v3 migration. https://doc.traefik.io/traefik/migration/v2-to-v3-details/#router-rule-matchers"
+  type        = string
+  default     = "v2"
+  validation {
+    condition     = contains(["v2", "v3"], var.default_router_rule_syntax)
+    error_message = "Provide 'v2' or 'v3'"
+  }
 }
