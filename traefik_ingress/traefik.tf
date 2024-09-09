@@ -11,7 +11,7 @@ locals {
     "persistence.enabled"                                  = true,
     "persistence.size"                                     = "1Gi",
     "persistence.storageClass"                             = kubernetes_storage_class.traefik_acme.metadata[0].name,
-    "ports.web.redirectTo"                                 = "websecure",
+    "ports.web.redirectTo.port"                            = "websecure",
     "ports.websecure.tls.enabled"                          = true,
     "ports.websecure.tls.certResolver"                     = "le",
     "providers.kubernetesIngress.publishedService.enabled" = true,
