@@ -48,7 +48,7 @@ resource "helm_release" "datadog_agent" {
   name       = "datadog"
   repository = "https://helm.datadoghq.com"
   chart      = "datadog"
-  version    = "3.33.1"
+  version    = "3.70.7"
 
   namespace = kubernetes_namespace.main.metadata[0].name
 
