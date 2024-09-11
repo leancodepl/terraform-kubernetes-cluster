@@ -37,6 +37,11 @@ locals {
     # As of AKS 1.19, containerd is the default runtime and we can disable Docker
     "datadog.criSocketPath" = "/var/run/containerd/containerd.sock",
   }
+  datadog_ignores = {
+    "DD_APM_IGNORE_RESOURCES"   = join(",", [for x in var.datadog_apm_ignore.by_resouce : "\"${x}\""])
+    "DD_APM_FILTER_TAGS_REJECT" = join(" ", var.datadog_apm_ignore.by_tag)
+  }
+  datadog_env = merge(var.datadog_env, local.datadog_ignores)
 }
 
 locals {
@@ -77,4 +82,15 @@ resource "helm_release" "datadog_agent" {
       value = set.value
     }
   }
+
+  values = [
+    yamlencode({
+      for i, k in local.datadog_env :
+      "datadog.env[${i}]" =>
+      {
+        name  = k,
+        value = local.datadog_env[k]
+      }
+    })
+  ]
 }
