@@ -85,11 +85,8 @@ resource "helm_release" "datadog_agent" {
 
   values = [
     yamlencode({
-      for i, k in local.datadog_env :
-      "datadog.env[${i}]" =>
-      {
-        name  = k,
-        value = local.datadog_env[k]
+      "datadog" = {
+        "envDict" = local.datadog_env
       }
     })
   ]
