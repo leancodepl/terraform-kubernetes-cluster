@@ -45,3 +45,19 @@ variable "datadog_resources" {
   }
 }
 
+variable "datadog_apm_ignore" {
+  description = "Filters that will be applied to APM"
+  type = object({
+    by_resouce = optional(list(string), []),
+    by_tag     = optional(list(string), []),
+  })
+  default = {
+    by_resouce = ["persistence.sql.NextMessages"]
+  }
+}
+
+variable "datadog_env" {
+  description = "Environment variables to pass to the Datadog Helm chart. Use this instead of constructing `datadog_config.env` yourself."
+  type        = map(string)
+  default     = {}
+}
