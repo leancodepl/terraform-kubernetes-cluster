@@ -41,7 +41,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   azure_active_directory_role_based_access_control {
     admin_group_object_ids = [var.access.admin_access_group]
-    azure_rbac_enabled     = true
+    azure_rbac_enabled     = false
   }
 
   network_profile {
@@ -58,6 +58,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   http_application_routing_enabled = false
   oidc_issuer_enabled              = true
   workload_identity_enabled        = true
+
+  node_os_upgrade_channel = "NodeImage"
 
   tags = local.tags
 
