@@ -70,16 +70,15 @@ variable "default_pool" {
     os_disk_size_gb = string,
     max_pods        = number,
     version         = optional(string),
-    node_taints     = optional(list(string)),
 
-    enable_auto_scaling = optional(bool),
-    min_count           = optional(number),
-    max_count           = optional(number),
-    count               = optional(number),
+    auto_scaling_enabled = optional(bool),
+    min_count            = optional(number),
+    max_count            = optional(number),
+    count                = optional(number),
   })
 
   validation {
-    condition     = var.default_pool.enable_auto_scaling == null || var.default_pool.enable_auto_scaling == false ? var.default_pool.count != null && var.default_pool.min_count == null && var.default_pool.max_count == null : var.default_pool.count == null && var.default_pool.min_count != null && var.default_pool.max_count != null && var.default_pool.min_count <= var.default_pool.max_count
+    condition     = var.default_pool.auto_scaling_enabled == null || var.default_pool.auto_scaling_enabled == false ? var.default_pool.count != null && var.default_pool.min_count == null && var.default_pool.max_count == null : var.default_pool.count == null && var.default_pool.min_count != null && var.default_pool.max_count != null && var.default_pool.min_count <= var.default_pool.max_count
     error_message = "When auto scaling is enabled, min_count and max_count must be provided. Otherwise, count must be provided."
   }
 }

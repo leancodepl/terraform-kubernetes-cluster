@@ -1,6 +1,6 @@
 terraform {
   required_providers {
-    kubernetes = ">= 2.13"
+    kubernetes = ">= 2.32"
   }
 }
 

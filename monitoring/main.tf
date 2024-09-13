@@ -1,7 +1,7 @@
 terraform {
   required_providers {
-    kubernetes = ">= 2.13"
-    helm       = ">= 2.6"
+    kubernetes = ">= 2.32"
+    helm       = ">= 2.15"
   }
 }
 

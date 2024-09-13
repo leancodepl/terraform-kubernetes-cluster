@@ -2,10 +2,10 @@ terraform {
   required_version = ">= 1.3"
 
   required_providers {
-    azuread    = ">= 2.28"
-    azurerm    = ">= 3.21"
-    random     = ">= 3.4"
-    kubernetes = ">= 2.13"
+    azuread    = ">= 2.53"
+    azurerm    = ">= 4.2"
+    kubernetes = ">= 2.32"
+    random     = ">= 3.6"
   }
 }
 
@@ -16,4 +16,3 @@ locals {
 }
 
 data "azurerm_client_config" "current" {}
-
