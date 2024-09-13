@@ -59,7 +59,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   oidc_issuer_enabled              = true
   workload_identity_enabled        = true
 
-  node_os_upgrade_channel = "NodeImage"
+  image_cleaner_interval_hours = 48
+  node_os_upgrade_channel      = "NodeImage"
 
   tags = local.tags
 
