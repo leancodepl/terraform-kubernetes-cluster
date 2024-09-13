@@ -25,6 +25,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
     type = "VirtualMachineScaleSets"
 
+    upgrade_settings {
+      drain_timeout_in_minutes      = 10
+      node_soak_duration_in_minutes = 0
+      max_surge                     = 10
+    }
+
     tags = local.tags
   }
 
