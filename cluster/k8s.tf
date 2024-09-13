@@ -10,10 +10,10 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   default_node_pool {
     name = "default"
 
-    vm_size             = var.default_pool.vm_size
-    os_disk_size_gb     = var.default_pool.os_disk_size_gb
-    max_pods            = var.default_pool.max_pods
-    enable_auto_scaling = var.default_pool.enable_auto_scaling
+    vm_size              = var.default_pool.vm_size
+    os_disk_size_gb      = var.default_pool.os_disk_size_gb
+    max_pods             = var.default_pool.max_pods
+    auto_scaling_enabled = var.default_pool.auto_scaling_enabled
 
     min_count  = var.default_pool.min_count
     max_count  = var.default_pool.max_count
@@ -22,9 +22,14 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     vnet_subnet_id = azurerm_subnet.default_node_pool.id
 
     orchestrator_version = var.default_pool.version == null ? var.cluster_version : var.default_pool.version
-    node_taints          = var.default_pool.node_taints
 
     type = "VirtualMachineScaleSets"
+
+    upgrade_settings {
+      drain_timeout_in_minutes      = 10
+      node_soak_duration_in_minutes = 0
+      max_surge                     = 10
+    }
 
     tags = local.tags
   }
@@ -35,8 +40,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   }
 
   azure_active_directory_role_based_access_control {
-    managed                = true
     admin_group_object_ids = [var.access.admin_access_group]
+    azure_rbac_enabled     = false
   }
 
   network_profile {
@@ -45,15 +50,17 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     load_balancer_sku = var.network.load_balancer_sku
 
     # Totally outside the 10.X.X.X that we use internally
-    docker_bridge_cidr = "172.17.0.1/16"
-    service_cidr       = "10.255.0.0/16"
-    dns_service_ip     = "10.255.0.10"
+    service_cidr   = "10.255.0.0/16"
+    dns_service_ip = "10.255.0.10"
   }
 
   azure_policy_enabled             = var.network.network_policy != null
   http_application_routing_enabled = false
   oidc_issuer_enabled              = true
   workload_identity_enabled        = true
+
+  image_cleaner_interval_hours = 48
+  node_os_upgrade_channel      = "NodeImage"
 
   tags = local.tags
 
