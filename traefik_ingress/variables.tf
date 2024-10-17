@@ -68,3 +68,9 @@ variable "default_router_rule_syntax" {
     error_message = "Provide 'v2' or 'v3'"
   }
 }
+
+variable "traefik_config" {
+  description = "Helm chart configuration values."
+  type        = map(any)
+  default     = {}
+}
