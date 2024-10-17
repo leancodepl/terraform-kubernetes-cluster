@@ -33,7 +33,13 @@ locals {
 }
 
 locals {
-  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, local.traefik_config_aks, local.traefik_config_monitoring)
+  traefik_config = merge(
+    local.traefik_resources,
+    local.traefik_config_logging,
+    local.traefik_config_aks,
+    local.traefik_config_monitoring,
+    var.traefik_config
+  )
 
   traefik_monitoring_args = var.enable_monitoring ? [
     "--tracing.otlp=true",
