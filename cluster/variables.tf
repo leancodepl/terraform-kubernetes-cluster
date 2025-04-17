@@ -11,7 +11,7 @@ variable "prefix" {
   type        = string
 
   validation {
-    condition     = can(regex("^[a-z][a-z0-9\\-]{1,43}[a-z0-9]$", var.prefix))
+    condition = can(regex("^[a-z][a-z0-9\\-]{1,43}[a-z0-9]$", var.prefix))
     error_message = "The prefix must must contain between 3 and 45 characters, and can contain only letters, numbers, and hyphens. It must start with a letter and must end with a letter or a number."
   }
 }
@@ -21,7 +21,7 @@ variable "cluster_version" {
   type        = string
 
   validation {
-    condition     = can(regex("\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", var.cluster_version))
+    condition = can(regex("\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", var.cluster_version))
     error_message = "The version must be correct"
   }
 }
@@ -39,13 +39,13 @@ variable "default_node_pool_subnet_size" {
 
 variable "default_node_pool_service_endpoints" {
   description = "The service endpoints that will be enabled on the node pool subnet."
-  type        = set(string)
-  default     = ["Microsoft.KeyVault", "Microsoft.Sql"]
+  type = set(string)
+  default = ["Microsoft.KeyVault", "Microsoft.Sql"]
 }
 
 variable "tags" {
   description = "Additional tags used by the cluster"
-  type        = map(any)
+  type = map(any)
 }
 
 variable "access" {
@@ -59,7 +59,7 @@ variable "network" {
   description = "Network configuration"
   type = object({
     load_balancer_sku = string,
-    network_policy    = optional(string),
+    network_policy = optional(string),
   })
 }
 
@@ -69,16 +69,16 @@ variable "default_pool" {
     vm_size         = string,
     os_disk_size_gb = string,
     max_pods        = number,
-    version         = optional(string),
+    version = optional(string),
 
     auto_scaling_enabled = optional(bool),
-    min_count            = optional(number),
-    max_count            = optional(number),
-    count                = optional(number),
+    min_count = optional(number),
+    max_count = optional(number),
+    count = optional(number),
   })
 
   validation {
-    condition     = var.default_pool.auto_scaling_enabled == null || var.default_pool.auto_scaling_enabled == false ? var.default_pool.count != null && var.default_pool.min_count == null && var.default_pool.max_count == null : var.default_pool.count == null && var.default_pool.min_count != null && var.default_pool.max_count != null && var.default_pool.min_count <= var.default_pool.max_count
+    condition = var.default_pool.auto_scaling_enabled == null || var.default_pool.auto_scaling_enabled == false ? var.default_pool.count != null && var.default_pool.min_count == null && var.default_pool.max_count == null : var.default_pool.count == null && var.default_pool.min_count != null && var.default_pool.max_count != null && var.default_pool.min_count <= var.default_pool.max_count
     error_message = "When auto scaling is enabled, min_count and max_count must be provided. Otherwise, count must be provided."
   }
 }
@@ -99,3 +99,24 @@ variable "sku_tier" {
     error_message = "The SKU tier might be `Free` or `Paid`."
   }
 }
+
+variable "maintenance_window_node_os" {
+  description = "Configuration for the maintenance window of node OS upgrades."
+  type = object({
+    day_of_month = optional(number),
+    day_of_week = optional(string),
+    duration  = number,
+    frequency = string,
+    interval  = number,
+    start_date = optional(string),
+    start_time = optional(string),
+    utc_offset = optional(string),
+    week_index = optional(string),
+    not_allowed = optional(object({
+      start = optional(string),
+      end = optional(string),
+    }))
+  })
+  default = null
+}
+
