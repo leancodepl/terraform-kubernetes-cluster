@@ -17,3 +17,5 @@ terraform.tfvars
 azurerm.tf
 
 *.plan
+
+.idea

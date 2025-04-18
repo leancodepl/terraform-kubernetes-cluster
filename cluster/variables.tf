@@ -99,3 +99,24 @@ variable "sku_tier" {
     error_message = "The SKU tier might be `Free` or `Paid`."
   }
 }
+
+variable "maintenance_window_node_os" {
+  description = "Configuration for the maintenance window of node OS upgrades."
+  type = object({
+    day_of_month = optional(number),
+    day_of_week  = optional(string),
+    duration     = number,
+    frequency    = string,
+    interval     = number,
+    start_date   = optional(string),
+    start_time   = optional(string),
+    utc_offset   = optional(string),
+    week_index   = optional(string),
+    not_allowed = optional(object({
+      start = optional(string),
+      end   = optional(string),
+    }))
+  })
+  default = null
+}
+

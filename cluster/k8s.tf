@@ -61,6 +61,27 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   image_cleaner_interval_hours = 48
   node_os_upgrade_channel      = "NodeImage"
+  dynamic "maintenance_window_node_os" {
+    for_each = var.maintenance_window_node_os[*]
+    content {
+      interval     = maintenance_window_node_os.value.interval
+      duration     = maintenance_window_node_os.value.duration
+      frequency    = maintenance_window_node_os.value.frequency
+      day_of_week  = maintenance_window_node_os.value.day_of_week
+      day_of_month = maintenance_window_node_os.value.day_of_month
+      start_date   = maintenance_window_node_os.value.start_date
+      start_time   = maintenance_window_node_os.value.start_time
+      utc_offset   = maintenance_window_node_os.value.utc_offset
+      week_index   = maintenance_window_node_os.value.week_index
+      dynamic "not_allowed" {
+        for_each = maintenance_window_node_os.value.not_allowed[*]
+        content {
+          start = maintenance_window_node_os.value.not_allowed.start
+          end   = maintenance_window_node_os.value.not_allowed.end
+        }
+      }
+    }
+  }
 
   tags = local.tags
 
@@ -72,3 +93,4 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 data "azurerm_resource_group" "cluster_node_group" {
   name = azurerm_kubernetes_cluster.cluster.node_resource_group
 }
+
