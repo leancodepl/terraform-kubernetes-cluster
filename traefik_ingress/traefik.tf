@@ -1,4 +1,6 @@
 locals {
+  use_lets_encrypt = var.acme_mail != null
+
   traefik_resources = {
     "resources.requests.cpu"    = var.resources.requests.cpu,
     "resources.requests.memory" = var.resources.requests.memory,
@@ -14,8 +16,6 @@ locals {
     "ports.web.redirections.entryPoint.to"                 = "websecure",
     "ports.web.redirections.entryPoint.scheme"             = "https",
     "ports.web.redirections.entryPoint.permanent"          = true,
-    "ports.websecure.tls.enabled"                          = true,
-    "ports.websecure.tls.certResolver"                     = "le",
     "providers.kubernetesIngress.publishedService.enabled" = true,
 
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = var.plugin.cluster_resource_group_name,
@@ -32,6 +32,13 @@ locals {
     "logs.access.enabled" = false,
     "logs.general.format" = "json",
   }
+
+  traefik_config_tls = local.use_lets_encrypt ? {
+    "ports.websecure.tls.enabled"      = true,
+    "ports.websecure.tls.certResolver" = "le"
+  } : {
+    "ports.websecure.tls.enabled" = true,
+  }
 }
 
 locals {
@@ -40,6 +47,7 @@ locals {
     local.traefik_config_logging,
     local.traefik_config_aks,
     local.traefik_config_monitoring,
+    local.traefik_config_tls,
     var.traefik_config
   )
 
@@ -54,15 +62,18 @@ locals {
     "--metrics.otlp.grpc.endpoint=$(AGENT_HOST_IP):55680",
   ] : []
 
-  traefik_args = concat([
+  traefik_le_args = local.use_lets_encrypt ? [
     "--certificatesresolvers.le.acme.storage=/data/acme.json",
     "--certificatesresolvers.le.acme.httpChallenge",
     "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
     "--certificatesresolvers.le.acme.email=${var.acme_mail}",
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
+  ] : []
+
+  traefik_args = concat([
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace_v1.traefik.metadata[0].name}-sts-header@kubernetescrd",
     "--core.defaultRuleSyntax=${var.default_router_rule_syntax}",
-  ], local.traefik_monitoring_args)
+  ], local.traefik_le_args, local.traefik_monitoring_args)
 }
 
 resource "kubernetes_namespace_v1" "traefik" {
