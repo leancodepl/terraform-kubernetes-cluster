@@ -1,4 +1,6 @@
 locals {
+  use_lets_encrypt = var.acme_mail != null
+
   traefik_resources = {
     "resources.requests.cpu"    = var.resources.requests.cpu,
     "resources.requests.memory" = var.resources.requests.memory,
@@ -12,13 +14,18 @@ locals {
     "persistence.size"                                     = "1Gi",
     "persistence.storageClass"                             = kubernetes_storage_class.traefik_acme.metadata[0].name,
     "ports.web.redirectTo"                                 = "websecure",
-    "ports.websecure.tls.enabled"                          = true,
-    "ports.websecure.tls.certResolver"                     = "le",
     "providers.kubernetesIngress.publishedService.enabled" = true,
 
     "service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-resource-group" = var.plugin.cluster_resource_group_name,
     "service.spec.loadBalancerIP"                                                             = azurerm_public_ip.traefik_public_ip.ip_address,
   }
+  traefik_config_tls = local.use_lets_encrypt ? {
+    "ports.websecure.tls.enabled"      = true,
+    "ports.websecure.tls.certResolver" = local.use_lets_encrypt ? "le" : "",
+    } : {
+    "ports.websecure.tls.enabled" = true,
+  }
+
   traefik_config_logging = {
     "logs.general.level"  = "INFO",
     "logs.access.enabled" = false,
@@ -27,16 +34,19 @@ locals {
 }
 
 locals {
-  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, var.config, local.traefik_config_aks)
+  traefik_config = merge(local.traefik_resources, local.traefik_config_logging, var.config, local.traefik_config_aks, local.traefik_config_tls)
 
-  traefik_args = concat([
+  traefik_le_args = local.use_lets_encrypt ? [
     "--certificatesresolvers.le.acme.storage=/data/acme.json",
     "--certificatesresolvers.le.acme.httpChallenge",
     "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web",
     "--certificatesresolvers.le.acme.email=${var.acme_mail}",
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
+  ] : []
+
+  traefik_args = concat([
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace.traefik.metadata[0].name}-sts-header@kubernetescrd",
-  ], var.args)
+  ], local.traefik_le_args, var.args)
 }
 
 resource "kubernetes_namespace" "traefik" {
