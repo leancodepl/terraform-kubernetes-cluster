@@ -48,12 +48,12 @@ locals {
   datadog_config = merge(local.datadog_resources, local.datadog_features, var.datadog_config, local.datadog_aks)
 }
 
-# See: https://github.com/DataDog/helm-charts/tree/master/charts/datadog
+# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
 resource "helm_release" "datadog_agent" {
   name       = "datadog"
   repository = "https://helm.datadoghq.com"
   chart      = "datadog"
-  version    = "3.70.7"
+  version    = "3.154.1"
 
   namespace = kubernetes_namespace.main.metadata[0].name
 
