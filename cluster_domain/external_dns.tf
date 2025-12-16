@@ -44,7 +44,7 @@ locals {
   external_dns_config = merge(local.external_dns_resources, local.external_dns_config_basic, var.config, local.external_dns_config_aks)
 }
 
-resource "kubernetes_namespace" "external_dns" {
+resource "kubernetes_namespace_v1" "external_dns" {
   metadata {
     name   = "external-dns"
     labels = local.ns_labels
@@ -57,15 +57,14 @@ resource "helm_release" "external_dns" {
   chart      = "external-dns"
   version    = "8.3.7"
 
-  namespace = kubernetes_namespace.external_dns.metadata[0].name
+  namespace = kubernetes_namespace_v1.external_dns.metadata[0].name
 
-  dynamic "set" {
-    for_each = local.external_dns_config
-    content {
-      name  = set.key
-      value = set.value
+  set = [
+    for k, v in local.external_dns_config : {
+      name  = k
+      value = v
     }
-  }
+  ]
 
   values = [yamlencode(local.external_dns_config_workload_identity)]
 
@@ -83,6 +82,6 @@ resource "azurerm_federated_identity_credential" "identity_credential" {
   resource_group_name = var.plugin.cluster_resource_group_name
 
   audience = ["api://AzureADTokenExchange"]
-  subject  = "system:serviceaccount:${kubernetes_namespace.external_dns.metadata[0].name}:external-dns"
+  subject  = "system:serviceaccount:${kubernetes_namespace_v1.external_dns.metadata[0].name}:external-dns"
   issuer   = data.azurerm_kubernetes_cluster.cluster.oidc_issuer_url
 }

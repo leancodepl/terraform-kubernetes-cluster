@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 1.3"
+  required_version = ">= 1.14"
 
   required_providers {
-    azuread    = ">= 3.3"
-    azurerm    = ">= 4.26"
-    kubernetes = ">= 2.36"
+    azuread    = ">= 3.7"
+    azurerm    = ">= 4.56"
+    kubernetes = ">= 3.0"
     random     = ">= 3.7"
   }
 }

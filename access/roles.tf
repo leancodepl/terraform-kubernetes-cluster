@@ -1,4 +1,4 @@
-resource "kubernetes_cluster_role_binding" "admin_access" {
+resource "kubernetes_cluster_role_binding_v1" "admin_access" {
   for_each = var.admins
 
   metadata {
@@ -17,7 +17,7 @@ resource "kubernetes_cluster_role_binding" "admin_access" {
   }
 }
 
-resource "kubernetes_cluster_role_binding" "view_access" {
+resource "kubernetes_cluster_role_binding_v1" "view_access" {
   for_each = var.viewers
 
   metadata {
