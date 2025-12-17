@@ -1,23 +1,32 @@
 locals {
-  external_dns_resources = {
-    "resources.requests.cpu"    = var.resources.requests.cpu,
-    "resources.requests.memory" = var.resources.requests.memory,
-    "resources.limits.cpu"      = var.resources.limits.cpu,
-    "resources.limits.memory"   = var.resources.limits.memory,
-  }
-  external_dns_config_aks = {
-    "provider"   = "azure",
-    "registry"   = "txt",
-    "txtOwnerId" = "external-dns-${var.plugin.prefix}-k8s",
+  external_dns_config = {
+    resources = {
+      requests = {
+        cpu    = var.resources.requests.cpu
+        memory = var.resources.requests.memory
+      }
+      limits = {
+        cpu    = var.resources.limits.cpu
+        memory = var.resources.limits.memory
+      }
+    }
 
-    "azure.tenantId"                     = data.azurerm_client_config.current.tenant_id,
-    "azure.subscriptionId"               = data.azurerm_client_config.current.subscription_id,
-    "azure.resourceGroup"                = var.plugin.cluster_resource_group_name,
-    "azure.useWorkloadIdentityExtension" = true,
-  }
+    provider   = "azure"
+    registry   = "txt"
+    txtOwnerId = "external-dns-${var.plugin.prefix}-k8s"
 
-  # this has to be passed as yamlencoded `values` instead of `set` to preserve "true" as string, not boolean
-  external_dns_config_workload_identity = {
+    azure = {
+      tenantId                     = data.azurerm_client_config.current.tenant_id
+      subscriptionId               = data.azurerm_client_config.current.subscription_id
+      resourceGroup                = var.plugin.cluster_resource_group_name
+      useWorkloadIdentityExtension = true
+    }
+
+    sources = ["service", "ingress"]
+
+    logFormat = "json"
+    logLevel  = "info"
+
     serviceAccount = {
       labels = {
         "azure.workload.identity/use" = "true"
@@ -26,22 +35,13 @@ locals {
         "azure.workload.identity/client-id" = var.plugin.cluster_identity_client_id
       }
     }
+
     podLabels = {
       "azure.workload.identity/use" = "true"
     }
   }
 
-  external_dns_config_basic = {
-    "sources[0]" = "service",
-    "sources[1]" = "ingress",
-
-    "logFormat" = "json",
-    "logLevel"  = "info",
-  }
-}
-
-locals {
-  external_dns_config = merge(local.external_dns_resources, local.external_dns_config_basic, var.config, local.external_dns_config_aks)
+  external_dns_values = merge(local.external_dns_config, var.config)
 }
 
 resource "kubernetes_namespace_v1" "external_dns" {
@@ -53,20 +53,13 @@ resource "kubernetes_namespace_v1" "external_dns" {
 
 resource "helm_release" "external_dns" {
   name       = "external-dns"
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
-  version    = "8.3.7"
+  version    = "1.19.0"
 
   namespace = kubernetes_namespace_v1.external_dns.metadata[0].name
 
-  set = [
-    for k, v in local.external_dns_config : {
-      name  = k
-      value = v
-    }
-  ]
-
-  values = [yamlencode(local.external_dns_config_workload_identity)]
+  values = [yamlencode(local.external_dns_values)]
 
   depends_on = [azurerm_federated_identity_credential.identity_credential]
 }
