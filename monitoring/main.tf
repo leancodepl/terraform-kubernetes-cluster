@@ -1,7 +1,7 @@
 terraform {
   required_providers {
-    kubernetes = ">= 2.32"
-    helm       = ">= 2.15"
+    kubernetes = ">= 3.0"
+    helm       = ">= 3.0"
   }
 }
 
@@ -22,7 +22,7 @@ locals {
   })
 }
 
-resource "kubernetes_namespace" "main" {
+resource "kubernetes_namespace_v1" "main" {
   metadata {
     name   = "monitoring"
     labels = local.ns_labels

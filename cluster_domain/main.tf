@@ -1,8 +1,8 @@
 terraform {
   required_providers {
-    azurerm    = ">= 4.2"
-    kubernetes = ">= 2.32"
-    helm       = ">= 2.15"
+    azurerm    = ">= 4.56"
+    kubernetes = ">= 3.0"
+    helm       = ">= 3.0"
   }
 }
 

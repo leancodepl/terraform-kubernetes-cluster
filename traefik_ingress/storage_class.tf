@@ -1,4 +1,4 @@
-resource "kubernetes_storage_class" "traefik_acme" {
+resource "kubernetes_storage_class_v1" "traefik_acme" {
   metadata {
     name   = "traefik-acme"
     labels = local.ns_labels

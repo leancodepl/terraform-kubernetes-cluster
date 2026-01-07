@@ -48,40 +48,40 @@ locals {
   datadog_config = merge(local.datadog_resources, local.datadog_features, var.datadog_config, local.datadog_aks)
 }
 
-# See: https://github.com/DataDog/helm-charts/tree/master/charts/datadog
+# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
 resource "helm_release" "datadog_agent" {
   name       = "datadog"
   repository = "https://helm.datadoghq.com"
   chart      = "datadog"
-  version    = "3.70.7"
+  version    = "3.154.1"
 
-  namespace = kubernetes_namespace.main.metadata[0].name
+  namespace = kubernetes_namespace_v1.main.metadata[0].name
 
-  set_sensitive {
-    name  = "datadog.apiKey"
-    value = var.datadog_keys.api
-  }
-
-  set_sensitive {
-    name  = "datadog.appKey"
-    value = var.datadog_keys.app
-  }
-
-  dynamic "set" {
-    for_each = local.datadog_config
-    content {
-      name  = set.key
-      value = set.value
+  set_sensitive = [
+    {
+      name  = "datadog.apiKey"
+      value = var.datadog_keys.api
+    },
+    {
+      name  = "datadog.appKey"
+      value = var.datadog_keys.app
     }
-  }
+  ]
 
-  dynamic "set" {
-    for_each = local.datadog_labels
-    content {
-      name  = "commonLabels.${set.key}"
-      value = set.value
-    }
-  }
+  set = concat(
+    [
+      for k, v in local.datadog_config : {
+        name  = k
+        value = v
+      }
+    ],
+    [
+      for k, v in local.datadog_labels : {
+        name  = "commonLabels.${k}"
+        value = v
+      }
+    ]
+  )
 
   values = [
     yamlencode({
