@@ -85,6 +85,11 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   tags = local.tags
 
+  # Do not remove! Once set, upgrade_override block cannot be removed from state.
+  upgrade_override {
+    force_upgrade_enabled = false
+  }
+
   depends_on = [
     azurerm_role_assignment.service_contributor
   ]
