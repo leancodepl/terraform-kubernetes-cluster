@@ -1,4 +1,15 @@
 locals {
+  azure_config = {
+    json = jsonencode({
+      tenantId                    = data.azurerm_client_config.current.tenant_id
+      subscriptionId              = data.azurerm_client_config.current.subscription_id
+      resourceGroup               = var.plugin.cluster_resource_group_name
+      useWorkloadIdentityExtension = true
+    })
+    secret_name = "azure-config"
+    volume_name = "azure-config"
+  }
+
   external_dns_config = {
     resources = {
       requests = {
@@ -14,13 +25,6 @@ locals {
     provider   = "azure"
     registry   = "txt"
     txtOwnerId = "external-dns-${var.plugin.prefix}-k8s"
-
-    azure = {
-      tenantId                     = data.azurerm_client_config.current.tenant_id
-      subscriptionId               = data.azurerm_client_config.current.subscription_id
-      resourceGroup                = var.plugin.cluster_resource_group_name
-      useWorkloadIdentityExtension = true
-    }
 
     sources = ["service", "ingress"]
 
@@ -39,6 +43,23 @@ locals {
     podLabels = {
       "azure.workload.identity/use" = "true"
     }
+
+    extraVolumes = [
+      {
+        name = local.azure_config.volume_name
+        secret = {
+          secretName = local.azure_config.secret_name
+        }
+      }
+    ]
+
+    extraVolumeMounts = [
+      {
+        name      = local.azure_config.volume_name
+        mountPath = "/etc/kubernetes"
+        readOnly  = true
+      }
+    ]
   }
 
   external_dns_values = merge(local.external_dns_config, var.config)
@@ -48,6 +69,17 @@ resource "kubernetes_namespace_v1" "external_dns" {
   metadata {
     name   = "external-dns"
     labels = local.ns_labels
+  }
+}
+
+resource "kubernetes_secret_v1" "external_dns_azure_config" {
+  metadata {
+    name      = local.azure_config.secret_name
+    namespace = kubernetes_namespace_v1.external_dns.metadata[0].name
+  }
+
+  data = {
+    "azure.json" = local.azure_config.json
   }
 }
 
@@ -61,7 +93,10 @@ resource "helm_release" "external_dns" {
 
   values = [yamlencode(local.external_dns_values)]
 
-  depends_on = [azurerm_federated_identity_credential.identity_credential]
+  depends_on = [
+    azurerm_federated_identity_credential.identity_credential,
+    kubernetes_secret_v1.external_dns_azure_config,
+  ]
 }
 
 data "azurerm_kubernetes_cluster" "cluster" {
