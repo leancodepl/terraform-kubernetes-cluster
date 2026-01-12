@@ -27,9 +27,11 @@ locals {
     "datadog.dogstatsd.tagCardinality" = "orchestrator",
   }
   datadog_aks = {
+    # TODO: We should check if config related to the issue below is needed anymore.
     # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
     "datadog.kubelet.host.valueFrom.fieldRef.fieldPath" = "spec.nodeName"
-    "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
+    # This setting is commented out as a temporary fix for mount issue on init.
+    # "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
     "datadog.kubelet.tlsVerify"                         = false
 
     "datadog.tags[0]" = "env:${var.plugin.prefix}"
