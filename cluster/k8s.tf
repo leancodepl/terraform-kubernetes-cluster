@@ -93,6 +93,13 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   depends_on = [
     azurerm_role_assignment.service_contributor
   ]
+
+  lifecycle {
+    ignore_changes = [
+      # See: https://github.com/hashicorp/terraform-provider-azurerm/issues/28960
+      upgrade_override[0].effective_until
+    ] 
+  }
 }
 
 data "azurerm_resource_group" "cluster_node_group" {
