@@ -27,10 +27,7 @@ locals {
     "datadog.dogstatsd.tagCardinality" = "orchestrator",
   }
   datadog_aks = {
-    # See for an explanation: https://docs.datadoghq.com/containers/kubernetes/distributions/?tab=helm#AKS
-    "datadog.kubelet.host.valueFrom.fieldRef.fieldPath" = "spec.nodeName"
-    "datadog.kubelet.hostCAPath"                        = "/etc/kubernetes/certs/kubeletserver.crt"
-    "datadog.kubelet.tlsVerify"                         = false
+    "datadog.kubelet.tlsVerify" = false
 
     "datadog.tags[0]" = "env:${var.plugin.prefix}"
 
@@ -45,7 +42,7 @@ locals {
 }
 
 locals {
-  datadog_config = merge(local.datadog_resources, local.datadog_features, var.datadog_config, local.datadog_aks)
+  datadog_config = merge(local.datadog_resources, local.datadog_features, local.datadog_aks, var.datadog_config)
 }
 
 # See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
