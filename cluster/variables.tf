@@ -120,3 +120,14 @@ variable "maintenance_window_node_os" {
   default = null
 }
 
+variable "node_os_upgrade_channel" {
+  description = "The node OS upgrade channel for the cluster."
+  type        = string
+  default     = "NodeImage"
+
+  validation {
+    condition     = contains(["None", "Unmanaged", "SecurityPatch", "NodeImage"], var.node_os_upgrade_channel)
+    error_message = "node_os_upgrade_channel must be one of: None, Unmanaged, SecurityPatch, NodeImage."
+  }
+}
+
