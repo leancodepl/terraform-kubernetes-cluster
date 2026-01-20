@@ -120,6 +120,26 @@ variable "maintenance_window_node_os" {
   default = null
 }
 
+variable "maintenance_window_auto_upgrade" {
+  description = "Configuration for the maintenance window of auto upgrades."
+  type = object({
+    day_of_month = optional(number),
+    day_of_week  = optional(string),
+    duration     = number,
+    frequency    = string,
+    interval     = number,
+    start_date   = optional(string),
+    start_time   = optional(string),
+    utc_offset   = optional(string),
+    week_index   = optional(string),
+    not_allowed = optional(object({
+      start = optional(string),
+      end   = optional(string),
+    }))
+  })
+  default = null
+}
+
 variable "node_os_upgrade_channel" {
   description = "The node OS upgrade channel for the cluster."
   type        = string
