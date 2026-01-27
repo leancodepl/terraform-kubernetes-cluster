@@ -16,8 +16,23 @@ env:
   TERRAFORM_VERSION: 1.14.0
   TFLINT_VERSION: 0.60.0
   TRIVY_VERSION: 0.68.2
+  EDITORCONFIG_CHECKER_VERSION: 3.3.0
 
 jobs:
+  editorconfig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup editorconfig-checker
+        uses: editorconfig-checker/action-editorconfig-checker@v2
+        with:
+          version: v${{ env.EDITORCONFIG_CHECKER_VERSION }}
+
+      - name: Run editorconfig-checker
+        run: editorconfig-checker
+
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
