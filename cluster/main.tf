@@ -14,5 +14,3 @@ locals {
     cluster_name = var.prefix
   })
 }
-
-data "azurerm_client_config" "current" {}

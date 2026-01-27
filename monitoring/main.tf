@@ -14,9 +14,6 @@ locals {
 }
 
 locals {
-  otel_labels = merge(local.ns_labels, {
-    component = "opentelemetry-collector",
-  })
   datadog_labels = merge(local.ns_labels, {
     component = "datadog",
   })
