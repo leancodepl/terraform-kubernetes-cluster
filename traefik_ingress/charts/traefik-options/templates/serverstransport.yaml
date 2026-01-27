@@ -1,0 +1,43 @@
+{{- if .Values.mtls.enabled }}
+# =============================================================================
+# ServersTransport for mTLS backend communication
+# =============================================================================
+# This ServersTransport configures Traefik to use mTLS when communicating
+# with backend services. It includes:
+# - Root CA certificate for validating server certificates
+# - Client certificate for Traefik to present to backends
+#
+# Usage in IngressRoute:
+#   services:
+#     - name: my-service
+#       port: 8443
+#       scheme: https
+#       serversTransport: internal-mtls
+# =============================================================================
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: internal-mtls
+  labels:
+    {{- include "traefik-options.labels" . | nindent 4 }}
+spec:
+  # Trust our internal CA for validating server certificates
+  rootCAsSecrets:
+    - {{ .Values.mtls.caBundleSecretName }}
+  
+  # Client certificate for Traefik to present to backends
+  certificatesSecrets:
+    - {{ .Values.mtls.clientCertSecretName }}
+  
+  # Require valid server certificates
+  insecureSkipVerify: false
+  
+  # Server name pattern for certificate validation
+  # Matches any service in the cluster
+  serverName: "*.svc.cluster.local"
+  
+  forwardingTimeouts:
+    dialTimeout: "30s"
+    responseHeaderTimeout: "60s"
+    idleConnTimeout: "90s"
+{{- end }}

@@ -1,5 +1,6 @@
 locals {
   use_lets_encrypt = var.acme_mail != null
+  mtls_enabled     = var.mtls_config != null
 
   traefik_resources = {
     "resources.requests.cpu"    = var.resources.requests.cpu,
@@ -51,6 +52,12 @@ locals {
     var.traefik_config
   )
 
+  traefik_options_mtls = local.mtls_enabled ? {
+    enabled              = true
+    caBundleSecretName   = kubernetes_secret_v1.internal_ca_bundle[0].metadata[0].name
+    clientCertSecretName = kubernetes_manifest.traefik_client_cert[0].manifest.spec.secretName
+  } : {}
+
   traefik_monitoring_args = var.enable_monitoring ? [
     "--tracing.otlp=true",
     "--tracing.otlp.grpc=true",
@@ -78,8 +85,11 @@ locals {
 
 resource "kubernetes_namespace_v1" "traefik" {
   metadata {
-    name   = "traefik"
-    labels = local.ns_labels
+    name = "traefik"
+    labels = merge(
+      local.ns_labels,
+      local.mtls_enabled ? { (var.mtls_config.namespace_label) = "true" } : {}
+    )
   }
 }
 
@@ -118,6 +128,10 @@ resource "helm_release" "traefik_options" {
   name      = "traefik-options"
   namespace = kubernetes_namespace_v1.traefik.metadata[0].name
   chart     = "${path.module}/charts/traefik-options"
+
+  values = [yamlencode({
+    mtls = local.traefik_options_mtls
+  })]
 
   depends_on = [helm_release.traefik]
 }
