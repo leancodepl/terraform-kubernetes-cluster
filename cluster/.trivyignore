@@ -5,11 +5,10 @@
 AVD-AZU-0040
 
 # CRITICAL: Cluster does not limit API access to specific IP addresses.
-# API access restrictions are managed at the network/firewall level, not within AKS configuration.
 AVD-AZU-0041
 
 # HIGH: RBAC is not enabled on cluster
 # False positive - azure_rbac_enabled=false disables Azure RBAC integration,
-# but Kubernetes RBAC is still enabled by default. We use AAD groups with K8s RBAC.
+# but Kubernetes RBAC is still enabled by default. We use Entra ID groups with K8s RBAC.
 AVD-AZU-0042
 
