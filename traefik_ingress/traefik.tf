@@ -36,7 +36,7 @@ locals {
   traefik_config_tls = local.use_lets_encrypt ? {
     "ports.websecure.tls.enabled"      = true,
     "ports.websecure.tls.certResolver" = "le"
-  } : {
+    } : {
     "ports.websecure.tls.enabled" = true,
   }
 }

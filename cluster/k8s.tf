@@ -121,7 +121,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
     ignore_changes = [
       # See: https://github.com/hashicorp/terraform-provider-azurerm/issues/28960
       upgrade_override[0].effective_until
-    ] 
+    ]
   }
 }
 
