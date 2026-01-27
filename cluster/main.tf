@@ -2,10 +2,22 @@ terraform {
   required_version = ">= 1.14"
 
   required_providers {
-    azuread    = ">= 3.7"
-    azurerm    = ">= 4.56"
-    kubernetes = ">= 3.0"
-    random     = ">= 3.7"
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = ">= 3.7"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.56"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 3.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.7"
+    }
   }
 }
 
@@ -14,5 +26,3 @@ locals {
     cluster_name = var.prefix
   })
 }
-
-data "azurerm_client_config" "current" {}

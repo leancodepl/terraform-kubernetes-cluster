@@ -1,9 +1,9 @@
 locals {
   azure_config = {
     json = jsonencode({
-      tenantId                    = data.azurerm_client_config.current.tenant_id
-      subscriptionId              = data.azurerm_client_config.current.subscription_id
-      resourceGroup               = var.plugin.cluster_resource_group_name
+      tenantId                     = data.azurerm_client_config.current.tenant_id
+      subscriptionId               = data.azurerm_client_config.current.subscription_id
+      resourceGroup                = var.plugin.cluster_resource_group_name
       useWorkloadIdentityExtension = true
     })
     secret_name = "azure-config"

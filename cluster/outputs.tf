@@ -22,9 +22,9 @@ output "access" {
   description = "The access data to the cluster."
   sensitive   = true
   value = {
-    kube_config           = azurerm_kubernetes_cluster.cluster.kube_config.0
+    kube_config           = azurerm_kubernetes_cluster.cluster.kube_config[0]
     kube_config_raw       = azurerm_kubernetes_cluster.cluster.kube_config_raw
-    kube_admin_config     = azurerm_kubernetes_cluster.cluster.kube_admin_config.0
+    kube_admin_config     = azurerm_kubernetes_cluster.cluster.kube_admin_config[0]
     kube_admin_config_raw = azurerm_kubernetes_cluster.cluster.kube_admin_config_raw
   }
 }
@@ -33,10 +33,10 @@ output "kubernetes_provider" {
   description = "The raw data that allows to initialize Kubernetes-accessing providers."
   sensitive   = true
   value = {
-    host                   = azurerm_kubernetes_cluster.cluster.kube_admin_config.0.host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config.0.client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config.0.cluster_ca_certificate)
+    host                   = azurerm_kubernetes_cluster.cluster.kube_admin_config[0].host
+    client_certificate     = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config[0].client_certificate)
+    client_key             = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config[0].client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.cluster.kube_admin_config[0].cluster_ca_certificate)
   }
 }
 

@@ -1,12 +1,14 @@
 terraform {
-  required_providers {
-    kubernetes = ">= 3.0"
-  }
-}
+  required_version = ">= 1.14"
 
-locals {
-  ns_labels = {
-    importance = "high",
-    kind       = "system",
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 4.56"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 3.0"
+    }
   }
 }

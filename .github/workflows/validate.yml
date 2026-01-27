@@ -1,0 +1,109 @@
+name: Terraform Kubernetes Cluster Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/*.tf"
+      - ".github/workflows/validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.tf"
+      - ".github/workflows/validate.yml"
+
+env:
+  TERRAFORM_VERSION: 1.14.0
+  TFLINT_VERSION: 0.60.0
+  TRIVY_VERSION: 0.68.2
+  EDITORCONFIG_CHECKER_VERSION: 3.3.0
+
+jobs:
+  editorconfig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup editorconfig-checker
+        uses: editorconfig-checker/action-editorconfig-checker@v2
+        with:
+          version: v${{ env.EDITORCONFIG_CHECKER_VERSION }}
+
+      - name: Run editorconfig-checker
+        run: editorconfig-checker
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.changed.outputs.all_changed_files }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get changed directories
+        id: changed
+        uses: tj-actions/changed-files@v45
+        with:
+          dir_names: true
+          dir_names_max_depth: 1
+          files: "**/*.tf"
+          files_ignore: |
+            .github/**
+          matrix: true
+
+  validate:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.directories != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJson(needs.detect-changes.outputs.directories) }}
+    name: Validate ${{ matrix.directory }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure Git for public modules
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+
+      - name: Terraform Init
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Format Check
+        run: terraform fmt -recursive -check -diff
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v${{ env.TFLINT_VERSION }}
+
+      - name: TFLint Init
+        run: tflint --init
+
+      - name: TFLint
+        run: tflint --recursive
+
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@v0.2.3
+        with:
+          version: v${{ env.TRIVY_VERSION }}
+          cache: true
+
+      - name: Trivy Security Scan
+        run: trivy config --exit-code 1 .
+
