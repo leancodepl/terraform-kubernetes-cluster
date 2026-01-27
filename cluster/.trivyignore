@@ -1,5 +1,3 @@
-# Following exceptions were made for errors that are yet to be investigated and fixed.
-
 # MEDIUM: Cluster does not have logging enabled via OMS Agent.
 # Monitoring is handled by Datadog instead of Azure Monitor OMS Agent.
 AVD-AZU-0040
