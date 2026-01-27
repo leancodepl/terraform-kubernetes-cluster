@@ -5,12 +5,12 @@ on:
     branches: [main]
     paths:
       - "**/*.tf"
-      - ".github/workflows/terraform-kubernetes-cluster_validate.yml"
+      - ".github/workflows/validate.yml"
   push:
     branches: [main]
     paths:
       - "**/*.tf"
-      - ".github/workflows/terraform-kubernetes-cluster_validate.yml"
+      - ".github/workflows/validate.yml"
 
 env:
   TERRAFORM_VERSION: 1.14.0
