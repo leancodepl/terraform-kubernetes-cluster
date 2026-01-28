@@ -107,8 +107,7 @@ module "traefik_mtls" {
 }
 
 # -----------------------------------------------------------------------------
-# Installs the traefik-options chart which creates the ServersTransport
-# resource that Traefik uses for mTLS connections to backends.
+# Installs the traefik-options chart (TLS options, middlewares, etc.)
 # -----------------------------------------------------------------------------
 
 resource "helm_release" "traefik_options" {
@@ -116,13 +115,38 @@ resource "helm_release" "traefik_options" {
   namespace = "traefik"
   chart     = "${path.module}/../../traefik_ingress/charts/traefik-options"
 
-  values = [yamlencode({
-    mtls = {
-      enabled              = true
-      caBundleSecretName   = module.traefik_mtls.ca_bundle_secret_name
-      clientCertSecretName = module.traefik_mtls.client_cert_secret_name
+  depends_on = [module.traefik_mtls]
+}
+
+# -----------------------------------------------------------------------------
+# This demonstrates the recommended pattern: each service defines its own
+# ServersTransport with proper hostname verification (serverName).
+#
+# The ServersTransport must be in the same namespace as the secrets it
+# references (traefik namespace), but can be used by IngressRoutes in
+# other namespaces via cross-namespace reference.
+# -----------------------------------------------------------------------------
+
+resource "kubernetes_manifest" "mtls_server_transport" {
+  manifest = {
+    apiVersion = "traefik.io/v1alpha1"
+    kind       = "ServersTransport"
+    metadata = {
+      name      = "mtls-server-transport"
+      namespace = "traefik" # TODO: Can't we really declary it in the project namespace?
     }
-  })]
+    spec = {
+      # The serverName must match a SAN in the backend's certificate.
+      # This enables proper TLS hostname verification.
+      serverName = "mtls-server.mtls-test.svc.cluster.local"
+
+      # Trust the internal CA for verifying backend server certificates
+      rootCAsSecrets = [module.traefik_mtls.ca_bundle_secret_name]
+
+      # Client certificate for Traefik to present to mTLS backends
+      certificatesSecrets = [module.traefik_mtls.client_cert_secret_name]
+    }
+  }
 
   depends_on = [module.traefik_mtls]
 }

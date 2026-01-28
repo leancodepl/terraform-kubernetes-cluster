@@ -2,7 +2,7 @@
 # k3d Cluster Configuration for mTLS Testing
 # =============================================================================
 # This creates a lightweight Kubernetes cluster for testing the mTLS module.
-# 
+#
 # Usage:
 #   k3d cluster create --config k3d-cluster.yaml
 #   k3d cluster delete mtls-test

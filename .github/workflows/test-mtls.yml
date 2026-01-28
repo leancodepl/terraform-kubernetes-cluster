@@ -96,6 +96,7 @@ jobs:
         uses: AbsaOSS/k3d-action@v2
         with:
           cluster-name: mtls-test
+          k3d-version: v5.8.3
           args: --config=tests/mtls/k3d-cluster.yaml
 
       - name: Verify Cluster Ready
@@ -118,15 +119,15 @@ jobs:
         run: |
           echo "=== ClusterIssuer Status ==="
           kubectl get clusterissuer -o wide 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Bundle Status ==="
           kubectl get bundle -o wide 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Traefik ServersTransport ==="
           kubectl get serverstransport -n traefik -o wide 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Terraform Outputs ==="
           cd tests/mtls && terraform output 2>/dev/null || echo "Not available"
@@ -136,31 +137,31 @@ jobs:
         run: |
           echo "=== Cluster Info ==="
           kubectl cluster-info 2>/dev/null || echo "Cluster not available"
-          
+
           echo ""
           echo "=== All Pods ==="
           kubectl get pods -A 2>/dev/null || true
-          
+
           echo ""
           echo "=== cert-manager logs ==="
           kubectl logs -n cert-manager deploy/cert-manager --tail=100 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== trust-manager logs ==="
           kubectl logs -n cert-manager deploy/trust-manager --tail=100 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== CSI driver logs ==="
           kubectl logs -n cert-manager -l app.kubernetes.io/name=cert-manager-csi-driver --tail=100 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Traefik logs ==="
           kubectl logs -n traefik deploy/traefik --tail=100 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Events in mtls-test namespace ==="
           kubectl get events -n mtls-test --sort-by='.lastTimestamp' 2>/dev/null || echo "Not available"
-          
+
           echo ""
           echo "=== Terraform state ==="
           cd tests/mtls && terraform show 2>/dev/null || echo "Not available"

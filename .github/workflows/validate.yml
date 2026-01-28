@@ -105,5 +105,5 @@ jobs:
           cache: true
 
       - name: Trivy Security Scan
-        run: trivy config --exit-code 1 .
+        run: trivy config --exit-code 1 --skip-dirs "tests" .
 

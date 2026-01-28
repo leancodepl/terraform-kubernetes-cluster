@@ -94,7 +94,7 @@ data:
         --key "$KEY" \
         --cacert "$CA" \
         "$SERVER_URL/" 2>&1) || true
-    
+
     if echo "$RESULT" | grep -q "mTLS OK"; then
         echo "   ✓ SUCCESS: $RESULT"
     else
@@ -107,7 +107,7 @@ data:
     RESULT=$(curl -s --connect-timeout 10 \
         --cacert "$CA" \
         "$SERVER_URL/" 2>&1) || true
-    
+
     if echo "$RESULT" | grep -qi "error\|alert\|required"; then
         echo "   ✓ SUCCESS: Connection correctly rejected (no client cert)"
     else
@@ -120,7 +120,7 @@ data:
     RESULT=$(curl -s --connect-timeout 10 \
         -H "Host: mtls-server.test" \
         "http://traefik.traefik.svc.cluster.local/" 2>&1) || true
-    
+
     if echo "$RESULT" | grep -q "mTLS OK"; then
         echo "   ✓ SUCCESS: Traefik -> backend mTLS working"
         echo "   Response: $RESULT"

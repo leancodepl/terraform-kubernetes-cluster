@@ -126,8 +126,8 @@ data:
 # =============================================================================
 # IngressRoute for Traefik -> Backend mTLS Testing
 # =============================================================================
-# Routes traffic from Traefik to the mTLS server using the ServersTransport
-# that presents Traefik's client certificate to the backend.
+# Routes traffic from Traefik to the mTLS server using a dedicated
+# ServersTransport with proper hostname verification.
 # =============================================================================
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -144,4 +144,4 @@ spec:
         - name: mtls-server
           port: 8443
           scheme: https
-          serversTransport: traefik-internal-mtls@kubernetescrd
+          serversTransport: traefik-mtls-server-transport@kubernetescrd

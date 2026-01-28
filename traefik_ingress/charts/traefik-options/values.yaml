@@ -1,7 +1,2 @@
 nameOverride: ""
 fullnameOverride: ""
-
-mtls:
-  enabled: false
-  caBundleSecretName: ""
-  clientCertSecretName: ""

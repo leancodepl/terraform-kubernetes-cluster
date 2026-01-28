@@ -52,12 +52,6 @@ locals {
     var.traefik_config
   )
 
-  traefik_options_mtls = local.mtls_enabled ? {
-    enabled              = true
-    caBundleSecretName   = kubernetes_secret_v1.internal_ca_bundle[0].metadata[0].name
-    clientCertSecretName = kubernetes_manifest.traefik_client_cert[0].manifest.spec.secretName
-  } : {}
-
   traefik_monitoring_args = var.enable_monitoring ? [
     "--tracing.otlp=true",
     "--tracing.otlp.grpc=true",

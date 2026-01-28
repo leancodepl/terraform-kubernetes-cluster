@@ -25,7 +25,7 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
 main() {
     local keep_terraform=false
-    
+
     while [[ $# -gt 0 ]]; do
         case $1 in
             --keep-terraform)
@@ -46,7 +46,7 @@ main() {
                 ;;
         esac
     done
-    
+
     # Delete k3d cluster
     if k3d cluster list 2>/dev/null | grep -q "$CLUSTER_NAME"; then
         log_info "Deleting k3d cluster '$CLUSTER_NAME'..."
@@ -54,7 +54,7 @@ main() {
     else
         log_warn "Cluster '$CLUSTER_NAME' not found."
     fi
-    
+
     # Clean up Terraform state
     if [[ "$keep_terraform" == "false" ]]; then
         log_info "Cleaning up Terraform state..."
@@ -63,7 +63,7 @@ main() {
     else
         log_info "Keeping Terraform state files."
     fi
-    
+
     log_info "Teardown complete."
 }
 

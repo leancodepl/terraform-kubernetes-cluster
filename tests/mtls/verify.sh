@@ -50,9 +50,9 @@ wait_for() {
     local description="$1"
     local command="$2"
     local timeout="${3:-60}"
-    
+
     log_info "Waiting for $description (timeout: ${timeout}s)..."
-    
+
     local elapsed=0
     while ! eval "$command" &>/dev/null; do
         if [[ $elapsed -ge $timeout ]]; then
@@ -62,7 +62,7 @@ wait_for() {
         sleep 2
         elapsed=$((elapsed + 2))
     done
-    
+
     log_pass "$description"
     return 0
 }
@@ -73,14 +73,14 @@ wait_for() {
 
 test_cert_manager() {
     log_info "=== Testing cert-manager ==="
-    
+
     if kubectl get deployment cert-manager -n cert-manager &>/dev/null; then
         log_pass "cert-manager deployment exists"
     else
         log_fail "cert-manager deployment not found"
         return 1
     fi
-    
+
     if kubectl get clusterissuer selfsigned-issuer &>/dev/null; then
         log_pass "selfsigned-issuer ClusterIssuer exists"
     else
@@ -90,19 +90,19 @@ test_cert_manager() {
 
 test_csi_driver() {
     log_info "=== Testing cert-manager CSI driver ==="
-    
+
     if kubectl get csidrivers csi.cert-manager.io &>/dev/null; then
         log_pass "CSI driver registered"
     else
         log_fail "CSI driver not registered"
         return 1
     fi
-    
+
     # Check DaemonSet is running
     local ready
     ready=$(kubectl get daemonset -n cert-manager -l app.kubernetes.io/name=cert-manager-csi-driver \
         -o jsonpath='{.items[0].status.numberReady}' 2>/dev/null || echo "0")
-    
+
     if [[ "$ready" -gt 0 ]]; then
         log_pass "CSI driver DaemonSet running ($ready pods ready)"
     else
@@ -112,14 +112,14 @@ test_csi_driver() {
 
 test_trust_manager() {
     log_info "=== Testing trust-manager ==="
-    
+
     if kubectl get deployment trust-manager -n cert-manager &>/dev/null; then
         log_pass "trust-manager deployment exists"
     else
         log_fail "trust-manager deployment not found"
         return 1
     fi
-    
+
     # Check Bundle CRD exists
     if kubectl get crd bundles.trust.cert-manager.io &>/dev/null; then
         log_pass "Bundle CRD registered"
@@ -130,7 +130,7 @@ test_trust_manager() {
 
 test_internal_ca() {
     log_info "=== Testing Internal CA ==="
-    
+
     # Check ClusterIssuer
     if kubectl get clusterissuer "$ISSUER_NAME" &>/dev/null; then
         log_pass "Internal CA ClusterIssuer exists"
@@ -138,17 +138,17 @@ test_internal_ca() {
         log_fail "Internal CA ClusterIssuer not found"
         return 1
     fi
-    
+
     # Check ClusterIssuer is ready
     local ready
     ready=$(kubectl get clusterissuer "$ISSUER_NAME" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null)
-    
+
     if [[ "$ready" == "True" ]]; then
         log_pass "Internal CA ClusterIssuer is Ready"
     else
         log_fail "Internal CA ClusterIssuer is not Ready (status: $ready)"
     fi
-    
+
     # Check CA secret
     if kubectl get secret "$CA_SECRET" -n cert-manager &>/dev/null; then
         log_pass "CA secret exists"
@@ -159,7 +159,7 @@ test_internal_ca() {
 
 test_trust_bundle() {
     log_info "=== Testing Trust Bundle ==="
-    
+
     # Check Bundle resource
     if kubectl get bundle "$BUNDLE_NAME" &>/dev/null; then
         log_pass "Trust Bundle exists"
@@ -167,17 +167,17 @@ test_trust_bundle() {
         log_fail "Trust Bundle not found"
         return 1
     fi
-    
+
     # Check namespace has the label
     local label
     label=$(kubectl get namespace "$NAMESPACE" -o jsonpath='{.metadata.labels.mtls\.leancode\.pl/enabled}' 2>/dev/null)
-    
+
     if [[ "$label" == "true" ]]; then
         log_pass "Test namespace has mTLS label"
     else
         log_fail "Test namespace missing mTLS label"
     fi
-    
+
     # Check ConfigMap was synced to namespace
     if kubectl get configmap "$BUNDLE_NAME" -n "$NAMESPACE" &>/dev/null; then
         log_pass "Trust bundle ConfigMap synced to test namespace"
@@ -188,18 +188,18 @@ test_trust_bundle() {
 
 test_traefik() {
     log_info "=== Testing Traefik ==="
-    
+
     if kubectl get deployment traefik -n traefik &>/dev/null; then
         log_pass "Traefik deployment exists"
     else
         log_fail "Traefik deployment not found"
         return 1
     fi
-    
+
     # Check Traefik namespace has mTLS label
     local label
     label=$(kubectl get namespace traefik -o jsonpath='{.metadata.labels.mtls\.leancode\.pl/enabled}' 2>/dev/null)
-    
+
     if [[ "$label" == "true" ]]; then
         log_pass "Traefik namespace has mTLS label"
     else
@@ -213,15 +213,15 @@ test_traefik() {
 
 deploy_test_workloads() {
     log_info "=== Deploying Test Workloads ==="
-    
+
     kubectl apply -f "$SCRIPT_DIR/test-workloads/server.yaml"
     kubectl apply -f "$SCRIPT_DIR/test-workloads/client.yaml"
-    
+
     # Wait for server to be ready
     wait_for "server deployment ready" \
         "kubectl get deployment mtls-server -n $NAMESPACE -o jsonpath='{.status.readyReplicas}' | grep -q '1'" \
         120
-    
+
     # Wait for client to be ready
     wait_for "client deployment ready" \
         "kubectl get deployment mtls-client -n $NAMESPACE -o jsonpath='{.status.readyReplicas}' | grep -q '1'" \
@@ -230,7 +230,7 @@ deploy_test_workloads() {
 
 test_csi_volume_mount() {
     log_info "=== Testing CSI Volume Mount ==="
-    
+
     # Check server pod has certificates
     if kubectl exec -n "$NAMESPACE" deploy/mtls-server -- test -f /etc/nginx/ssl/tls.crt 2>/dev/null; then
         log_pass "Server certificate mounted via CSI"
@@ -238,14 +238,14 @@ test_csi_volume_mount() {
         log_fail "Server certificate not found"
         return 1
     fi
-    
+
     # Check client pod has certificates
     if kubectl exec -n "$NAMESPACE" deploy/mtls-client -- test -f /etc/ssl/client/tls.crt 2>/dev/null; then
         log_pass "Client certificate mounted via CSI"
     else
         log_fail "Client certificate not found"
     fi
-    
+
     # Check CA bundle is mounted
     if kubectl exec -n "$NAMESPACE" deploy/mtls-client -- test -f /etc/ssl/ca/ca-certificates.crt 2>/dev/null; then
         log_pass "CA bundle mounted from trust-manager"
@@ -256,13 +256,13 @@ test_csi_volume_mount() {
 
 test_mtls_connection() {
     log_info "=== Testing mTLS Connection ==="
-    
+
     # Run the mTLS test script in the client pod
     local result
     result=$(kubectl exec -n "$NAMESPACE" deploy/mtls-client -- /scripts/test-mtls.sh 2>&1) || true
-    
+
     echo "$result"
-    
+
     if echo "$result" | grep -q "All mTLS tests passed"; then
         log_pass "mTLS connection test passed"
     else
@@ -273,35 +273,35 @@ test_mtls_connection() {
 
 test_traefik_mtls_proxy() {
     log_info "=== Testing Traefik → Backend mTLS ==="
-    
-    # Verify ServersTransport exists
-    if kubectl get serverstransport internal-mtls -n traefik &>/dev/null; then
+
+    # Verify ServersTransport exists (with proper serverName for hostname verification)
+    if kubectl get serverstransport mtls-server-transport -n traefik &>/dev/null; then
         log_pass "ServersTransport exists"
     else
         log_fail "ServersTransport not found"
         return 1
     fi
-    
+
     # Verify Traefik client certificate exists
     if kubectl get secret traefik-client-cert -n traefik &>/dev/null; then
         log_pass "Traefik client certificate exists"
     else
         log_fail "Traefik client certificate not found"
     fi
-    
+
     # Verify CA bundle exists in traefik namespace
     if kubectl get secret internal-ca-bundle -n traefik &>/dev/null; then
         log_pass "CA bundle exists in traefik namespace"
     else
         log_fail "CA bundle not found in traefik namespace"
     fi
-    
+
     # Test mTLS proxy (this is also tested in the test-mtls.sh script)
     local result
     result=$(kubectl exec -n "$NAMESPACE" deploy/mtls-client -- \
         curl -s -H "Host: mtls-server.test" \
         http://traefik.traefik.svc.cluster.local/ 2>&1) || true
-    
+
     if echo "$result" | grep -q "mTLS OK"; then
         log_pass "Traefik → backend mTLS connection"
     else
@@ -346,13 +346,13 @@ main() {
                 ;;
         esac
     done
-    
+
     echo ""
     echo "========================================"
     echo "  mTLS Module Verification"
     echo "========================================"
     echo ""
-    
+
     # Infrastructure tests
     test_cert_manager
     test_csi_driver
@@ -360,17 +360,17 @@ main() {
     test_internal_ca
     test_trust_bundle
     test_traefik
-    
+
     # Workload tests (unless --quick)
     if [[ "$QUICK_MODE" == "false" ]]; then
         echo ""
         log_info "Running workload tests..."
-        
+
         deploy_test_workloads
         test_csi_volume_mount
         test_mtls_connection
         test_traefik_mtls_proxy
-        
+
         if [[ "$CI_MODE" == "true" ]]; then
             cleanup_test_workloads
         else
@@ -383,18 +383,18 @@ main() {
     else
         log_skip "Workload tests (--quick mode)"
     fi
-    
+
     # Summary
     echo ""
     echo "========================================"
     echo "  Results: ${TESTS_PASSED} passed, ${TESTS_FAILED} failed"
     echo "========================================"
     echo ""
-    
+
     if [[ $TESTS_FAILED -gt 0 ]]; then
         exit 1
     fi
-    
+
     exit 0
 }
 

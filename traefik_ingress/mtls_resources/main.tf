@@ -4,6 +4,17 @@
 # Creates mTLS resources for Traefik to use when connecting to backends.
 # =============================================================================
 
+terraform {
+  required_version = ">= 1.14"
+
+  required_providers {
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 3.0"
+    }
+  }
+}
+
 # -----------------------------------------------------------------------------
 # Client Certificate
 # -----------------------------------------------------------------------------
@@ -33,6 +44,11 @@ resource "kubernetes_manifest" "client_cert" {
         "${var.service_name}.${var.namespace}",
         "${var.service_name}.${var.namespace}.svc",
         "${var.service_name}.${var.namespace}.svc.cluster.local"
+      ]
+      usages = [
+        "digital signature",
+        "key encipherment",
+        "client auth"
       ]
       issuerRef = {
         name  = var.mtls_config.issuer_name
