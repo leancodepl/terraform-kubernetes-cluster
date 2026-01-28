@@ -2,10 +2,11 @@
 # mTLS Module Integration Tests
 # =============================================================================
 # Runs the mTLS module in a k3d cluster to verify it works end-to-end.
+# Also tests Traefik → backend mTLS proxy flow using the mtls_resources submodule.
 #
 # Triggers:
-#   - Push to main (changes to mtls module)
-#   - Pull requests (changes to mtls module)
+#   - Push to main (changes to mtls module or traefik_ingress)
+#   - Pull requests (changes to mtls module or traefik_ingress)
 #   - Manual dispatch
 # =============================================================================
 
@@ -16,12 +17,14 @@ on:
     branches: [main]
     paths:
       - 'mtls/**'
+      - 'traefik_ingress/**'
       - 'tests/mtls/**'
       - '.github/workflows/test-mtls.yml'
   pull_request:
     branches: [main]
     paths:
       - 'mtls/**'
+      - 'traefik_ingress/**'
       - 'tests/mtls/**'
       - '.github/workflows/test-mtls.yml'
   workflow_dispatch:
@@ -121,6 +124,10 @@ jobs:
           kubectl get bundle -o wide 2>/dev/null || echo "Not available"
           
           echo ""
+          echo "=== Traefik ServersTransport ==="
+          kubectl get serverstransport -n traefik -o wide 2>/dev/null || echo "Not available"
+          
+          echo ""
           echo "=== Terraform Outputs ==="
           cd tests/mtls && terraform output 2>/dev/null || echo "Not available"
 
@@ -145,6 +152,10 @@ jobs:
           echo ""
           echo "=== CSI driver logs ==="
           kubectl logs -n cert-manager -l app.kubernetes.io/name=cert-manager-csi-driver --tail=100 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== Traefik logs ==="
+          kubectl logs -n traefik deploy/traefik --tail=100 2>/dev/null || echo "Not available"
           
           echo ""
           echo "=== Events in mtls-test namespace ==="

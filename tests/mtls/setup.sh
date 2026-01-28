@@ -128,6 +128,42 @@ install_cert_manager() {
 }
 
 # -----------------------------------------------------------------------------
+# Install Traefik (for testing Traefik -> backend mTLS)
+# -----------------------------------------------------------------------------
+
+install_traefik() {
+    log_info "Installing Traefik..."
+    
+    # Create namespace if it doesn't exist
+    kubectl create namespace traefik --dry-run=client -o yaml | kubectl apply -f -
+    
+    # Add Traefik helm repo
+    helm repo add traefik https://helm.traefik.io/traefik --force-update
+    helm repo update traefik
+    
+    # Install Traefik
+    # Enable allowCrossNamespace to allow IngressRoutes in other namespaces
+    # to reference ServersTransport in the traefik namespace
+    helm upgrade --install traefik traefik/traefik \
+        --namespace traefik \
+        --set ingressRoute.dashboard.enabled=false \
+        --set service.type=ClusterIP \
+        --set ports.web.port=80 \
+        --set ports.web.exposedPort=80 \
+        --set ports.websecure.port=443 \
+        --set ports.websecure.exposedPort=443 \
+        --set providers.kubernetesCRD.allowCrossNamespace=true \
+        --wait \
+        --timeout 5m
+    
+    log_info "Waiting for Traefik to be ready..."
+    kubectl wait --for=condition=Available deployment/traefik \
+        --namespace traefik --timeout=120s
+    
+    log_info "Traefik installed successfully."
+}
+
+# -----------------------------------------------------------------------------
 # Apply Terraform (mTLS module)
 # -----------------------------------------------------------------------------
 
@@ -200,6 +236,7 @@ main() {
     fi
     
     install_cert_manager
+    install_traefik
     apply_terraform
     
     echo ""

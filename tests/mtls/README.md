@@ -1,6 +1,6 @@
 # mTLS Module Tests
 
-Integration tests for the `mtls` Terraform module using a local k3d cluster.
+Integration tests for the `mtls` Terraform module using a local k3d cluster. Tests both direct pod-to-pod mTLS and Traefik → backend mTLS proxy flow.
 
 ## Prerequisites
 
@@ -23,8 +23,10 @@ Integration tests for the `mtls` Terraform module using a local k3d cluster.
 This will:
 1. Create a k3d cluster (`mtls-test`)
 2. Install cert-manager
-3. Apply the mTLS Terraform module (two-stage apply for CRD handling)
-4. Create a test namespace with mTLS enabled
+3. Install Traefik (with cross-namespace references enabled)
+4. Apply the mTLS Terraform module (two-stage apply for CRD handling)
+5. Create test namespaces with mTLS enabled (mtls-test, traefik)
+6. Deploy Traefik mTLS resources (client cert, CA bundle, ServersTransport)
 
 **Note:** The Terraform apply runs in two stages:
 1. First, helm releases are applied to install CRDs (trust-manager Bundle CRD)
@@ -55,7 +57,7 @@ kubectl apply -f test-workloads/
 kubectl wait --for=condition=Available deployment/mtls-server -n mtls-test --timeout=120s
 kubectl wait --for=condition=Available deployment/mtls-client -n mtls-test --timeout=120s
 
-# Run mTLS test
+# Run mTLS test (includes direct mTLS + Traefik proxy test)
 kubectl exec -n mtls-test deploy/mtls-client -- /scripts/test-mtls.sh
 
 # Show certificate info
@@ -76,6 +78,26 @@ kubectl delete -f test-workloads/
 ./teardown.sh
 ```
 
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Test Flow                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Direct mTLS (pod-to-pod):                                   │
+│     mtls-client ──[mTLS]──► mtls-server                         │
+│                                                                 │
+│  2. Traefik Proxy mTLS:                                         │
+│     mtls-client ──[HTTP]──► Traefik ──[mTLS]──► mtls-server     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+The tests validate:
+- **Direct mTLS**: Client presents its cert, server validates against CA
+- **Traefik mTLS**: Traefik presents its client cert to backend, backend validates against CA
+
 ## Test Cases
 
 | Test | Description |
@@ -85,17 +107,22 @@ kubectl delete -f test-workloads/
 | trust-manager deployed | Deployment and Bundle CRD exist |
 | Internal CA ready | ClusterIssuer is Ready |
 | Trust bundle synced | ConfigMap appears in labeled namespace |
+| Traefik deployed | Traefik deployment exists with mTLS label |
 | CSI volume mount | Certificates appear in pod volumes |
 | mTLS connection | Client connects to server with mutual TLS |
 | No-cert rejection | Server rejects connections without client cert |
+| Traefik mTLS proxy | Traefik → backend mTLS connection works |
+| ServersTransport exists | Traefik mTLS ServersTransport configured |
+| Traefik client cert | Traefik client certificate exists |
+| CA bundle in traefik ns | CA bundle copied to traefik namespace |
 
 ## CI Integration
 
 The GitHub Actions workflow (`.github/workflows/test-mtls.yml`) uses the same scripts (`setup.sh`, `verify.sh`, `teardown.sh`) to ensure consistent behavior between local and CI testing.
 
 Triggers:
-- Push to `main` (changes to `mtls/**` or `tests/mtls/**`)
-- Pull requests (changes to `mtls/**` or `tests/mtls/**`)
+- Push to `main` (changes to `mtls/**`, `traefik_ingress/**`, or `tests/mtls/**`)
+- Pull requests (changes to `mtls/**`, `traefik_ingress/**`, or `tests/mtls/**`)
 - Manual dispatch (with optional debug mode)
 
 ## Troubleshooting
@@ -117,8 +144,24 @@ kubectl logs -n cert-manager deploy/cert-manager
 ### Trust bundle not syncing
 
 ```bash
-kubectl get bundle test-ca-bundle -o yaml
+kubectl get bundle internal-ca-bundle -o yaml
 kubectl logs -n cert-manager deploy/trust-manager
+```
+
+### Traefik mTLS not working
+
+```bash
+# Check ServersTransport
+kubectl get serverstransport -n traefik -o yaml
+
+# Check Traefik logs for TLS errors
+kubectl logs -n traefik deploy/traefik --tail=50
+
+# Check Traefik client certificate
+kubectl get secret traefik-client-cert -n traefik
+
+# Check CA bundle in traefik namespace
+kubectl get secret internal-ca-bundle -n traefik
 ```
 
 ### Reset everything

@@ -116,6 +116,21 @@ data:
     fi
 
     echo ""
+    echo "3. Testing via Traefik proxy (Traefik presents client cert)..."
+    RESULT=$(curl -s --connect-timeout 10 \
+        -H "Host: mtls-server.test" \
+        "http://traefik.traefik.svc.cluster.local/" 2>&1) || true
+    
+    if echo "$RESULT" | grep -q "mTLS OK"; then
+        echo "   ✓ SUCCESS: Traefik -> backend mTLS working"
+        echo "   Response: $RESULT"
+    else
+        echo "   ✗ FAILED: Traefik -> backend mTLS failed"
+        echo "   Response: $RESULT"
+        exit 1
+    fi
+
+    echo ""
     echo "=== All mTLS tests passed! ==="
 
   show-certs.sh: |

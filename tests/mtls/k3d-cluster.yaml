@@ -18,6 +18,11 @@ image: rancher/k3s:v1.35.0-k3s1
 kubeAPI:
   hostIP: "127.0.0.1"
   hostPort: "6443"
+ports:
+  # Traefik HTTP entrypoint
+  - port: 8080:80
+    nodeFilters:
+      - loadbalancer
 options:
   k3d:
     wait: true

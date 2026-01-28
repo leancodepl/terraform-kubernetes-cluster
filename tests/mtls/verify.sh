@@ -186,6 +186,27 @@ test_trust_bundle() {
     fi
 }
 
+test_traefik() {
+    log_info "=== Testing Traefik ==="
+    
+    if kubectl get deployment traefik -n traefik &>/dev/null; then
+        log_pass "Traefik deployment exists"
+    else
+        log_fail "Traefik deployment not found"
+        return 1
+    fi
+    
+    # Check Traefik namespace has mTLS label
+    local label
+    label=$(kubectl get namespace traefik -o jsonpath='{.metadata.labels.mtls\.leancode\.pl/enabled}' 2>/dev/null)
+    
+    if [[ "$label" == "true" ]]; then
+        log_pass "Traefik namespace has mTLS label"
+    else
+        log_fail "Traefik namespace missing mTLS label"
+    fi
+}
+
 # -----------------------------------------------------------------------------
 # Workload Tests
 # -----------------------------------------------------------------------------
@@ -250,6 +271,44 @@ test_mtls_connection() {
     fi
 }
 
+test_traefik_mtls_proxy() {
+    log_info "=== Testing Traefik → Backend mTLS ==="
+    
+    # Verify ServersTransport exists
+    if kubectl get serverstransport internal-mtls -n traefik &>/dev/null; then
+        log_pass "ServersTransport exists"
+    else
+        log_fail "ServersTransport not found"
+        return 1
+    fi
+    
+    # Verify Traefik client certificate exists
+    if kubectl get secret traefik-client-cert -n traefik &>/dev/null; then
+        log_pass "Traefik client certificate exists"
+    else
+        log_fail "Traefik client certificate not found"
+    fi
+    
+    # Verify CA bundle exists in traefik namespace
+    if kubectl get secret internal-ca-bundle -n traefik &>/dev/null; then
+        log_pass "CA bundle exists in traefik namespace"
+    else
+        log_fail "CA bundle not found in traefik namespace"
+    fi
+    
+    # Test mTLS proxy (this is also tested in the test-mtls.sh script)
+    local result
+    result=$(kubectl exec -n "$NAMESPACE" deploy/mtls-client -- \
+        curl -s -H "Host: mtls-server.test" \
+        http://traefik.traefik.svc.cluster.local/ 2>&1) || true
+    
+    if echo "$result" | grep -q "mTLS OK"; then
+        log_pass "Traefik → backend mTLS connection"
+    else
+        log_fail "Traefik → backend mTLS failed: $result"
+    fi
+}
+
 cleanup_test_workloads() {
     log_info "Cleaning up test workloads..."
     kubectl delete -f "$SCRIPT_DIR/test-workloads/server.yaml" --ignore-not-found
@@ -300,6 +359,7 @@ main() {
     test_trust_manager
     test_internal_ca
     test_trust_bundle
+    test_traefik
     
     # Workload tests (unless --quick)
     if [[ "$QUICK_MODE" == "false" ]]; then
@@ -309,6 +369,7 @@ main() {
         deploy_test_workloads
         test_csi_volume_mount
         test_mtls_connection
+        test_traefik_mtls_proxy
         
         if [[ "$CI_MODE" == "true" ]]; then
             cleanup_test_workloads
