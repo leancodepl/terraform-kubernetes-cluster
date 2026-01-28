@@ -11,9 +11,17 @@
 # =============================================================================
 
 terraform {
+  required_version = ">= 1.14"
+
   required_providers {
-    kubernetes = ">= 3.0"
-    helm       = ">= 3.1"
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 3.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = ">= 3.1"
+    }
   }
 }
 
