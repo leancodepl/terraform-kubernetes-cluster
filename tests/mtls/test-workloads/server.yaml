@@ -98,23 +98,17 @@ data:
   default.conf: |
     server {
         listen 8443 ssl;
-        server_name mtls-server;
 
         # Server certificate
         ssl_certificate /etc/nginx/ssl/tls.crt;
         ssl_certificate_key /etc/nginx/ssl/tls.key;
 
-        # Client certificate verification (mTLS)
-        # Use optional to allow per-location control
+        # mTLS: verify client cert if provided
         ssl_client_certificate /etc/nginx/ca/ca-certificates.crt;
         ssl_verify_client optional;
 
-        # TLS settings
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_prefer_server_ciphers on;
-
+        # Requires valid client certificate
         location / {
-            # Require valid client certificate
             if ($ssl_client_verify != SUCCESS) {
                 return 403 'Client certificate required\n';
             }
@@ -122,8 +116,8 @@ data:
             add_header Content-Type text/plain;
         }
 
+        # No client certificate required
         location /health {
-            # Health endpoint - no client cert required
             return 200 'healthy\n';
             add_header Content-Type text/plain;
         }
