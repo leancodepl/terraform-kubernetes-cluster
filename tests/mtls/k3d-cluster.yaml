@@ -1,0 +1,32 @@
+# =============================================================================
+# k3d Cluster Configuration for mTLS Testing
+# =============================================================================
+# This creates a lightweight Kubernetes cluster for testing the mTLS module.
+# 
+# Usage:
+#   k3d cluster create --config k3d-cluster.yaml
+#   k3d cluster delete mtls-test
+# =============================================================================
+
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: mtls-test
+servers: 1
+agents: 1
+image: rancher/k3s:v1.35.0-k3s1
+kubeAPI:
+  hostIP: "127.0.0.1"
+  hostPort: "6443"
+options:
+  k3d:
+    wait: true
+    timeout: "120s"
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
+  kubeconfig:
+    updateDefaultKubeconfig: true
+    switchCurrentContext: true

@@ -35,11 +35,6 @@ resource "helm_release" "cert_manager_csi_driver" {
     {
       name  = "app.driver.csiDataDir"
       value = "/tmp/cert-manager-csi-driver"
-    },
-    # Liveness probe settings
-    {
-      name  = "livenessProbe.port"
-      value = "9809"
     }
   ]
 }

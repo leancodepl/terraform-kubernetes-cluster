@@ -1,0 +1,130 @@
+# =============================================================================
+# mTLS Test Server
+# =============================================================================
+# A simple HTTPS server that requires client certificates (mTLS).
+# Uses cert-manager CSI driver to mount server certificates.
+#
+# The server:
+#   - Presents its certificate to clients
+#   - Requires clients to present a valid certificate
+#   - Validates client certificates against the internal CA
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: mtls-server
+  namespace: mtls-test
+spec:
+  selector:
+    app: mtls-server
+  ports:
+    - port: 8443
+      targetPort: 8443
+      name: https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mtls-server
+  namespace: mtls-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mtls-server
+  template:
+    metadata:
+      labels:
+        app: mtls-server
+    spec:
+      containers:
+        - name: server
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 8443
+          volumeMounts:
+            # Server TLS certificates from CSI driver
+            - name: server-tls
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+            # CA bundle for client verification from trust-manager
+            - name: ca-bundle
+              mountPath: /etc/nginx/ca
+              readOnly: true
+            # Custom nginx config
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+          readinessProbe:
+            tcpSocket:
+              port: 8443
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+      volumes:
+        # CSI driver mounts the server certificate
+        - name: server-tls
+          csi:
+            driver: csi.cert-manager.io
+            readOnly: true
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: internal-ca-issuer
+              csi.cert-manager.io/issuer-kind: ClusterIssuer
+              csi.cert-manager.io/issuer-group: cert-manager.io
+              csi.cert-manager.io/dns-names: "mtls-server.mtls-test.svc.cluster.local,mtls-server"
+              csi.cert-manager.io/duration: "24h"
+              csi.cert-manager.io/renew-before: "1h"
+              csi.cert-manager.io/key-usages: "server auth"
+        # CA bundle from trust-manager
+        - name: ca-bundle
+          configMap:
+            name: internal-ca-bundle
+        # Nginx configuration
+        - name: nginx-config
+          configMap:
+            name: mtls-server-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-server-config
+  namespace: mtls-test
+data:
+  default.conf: |
+    server {
+        listen 8443 ssl;
+        server_name mtls-server;
+
+        # Server certificate
+        ssl_certificate /etc/nginx/ssl/tls.crt;
+        ssl_certificate_key /etc/nginx/ssl/tls.key;
+
+        # Client certificate verification (mTLS)
+        # Use optional to allow per-location control
+        ssl_client_certificate /etc/nginx/ca/ca-certificates.crt;
+        ssl_verify_client optional;
+
+        # TLS settings
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            # Require valid client certificate
+            if ($ssl_client_verify != SUCCESS) {
+                return 403 'Client certificate required\n';
+            }
+            return 200 'mTLS OK! Client CN: $ssl_client_s_dn\n';
+            add_header Content-Type text/plain;
+        }
+
+        location /health {
+            # Health endpoint - no client cert required
+            return 200 'healthy\n';
+            add_header Content-Type text/plain;
+        }
+    }

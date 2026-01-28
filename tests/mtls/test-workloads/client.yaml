@@ -1,0 +1,129 @@
+# =============================================================================
+# mTLS Test Client
+# =============================================================================
+# A client pod that connects to the mTLS server.
+# Uses cert-manager CSI driver to mount client certificates.
+#
+# Usage:
+#   kubectl exec -n mtls-test deploy/mtls-client -- /scripts/test-mtls.sh
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mtls-client
+  namespace: mtls-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mtls-client
+  template:
+    metadata:
+      labels:
+        app: mtls-client
+    spec:
+      containers:
+        - name: client
+          image: alpine:3.21
+          command: ["/bin/sh", "-c", "apk add --no-cache curl openssl && sleep infinity"]
+          volumeMounts:
+            # Client TLS certificates from CSI driver
+            - name: client-tls
+              mountPath: /etc/ssl/client
+              readOnly: true
+            # CA bundle for server verification from trust-manager
+            - name: ca-bundle
+              mountPath: /etc/ssl/ca
+              readOnly: true
+            # Test scripts
+            - name: scripts
+              mountPath: /scripts
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+      volumes:
+        # CSI driver mounts the client certificate
+        - name: client-tls
+          csi:
+            driver: csi.cert-manager.io
+            readOnly: true
+            volumeAttributes:
+              csi.cert-manager.io/issuer-name: internal-ca-issuer
+              csi.cert-manager.io/issuer-kind: ClusterIssuer
+              csi.cert-manager.io/issuer-group: cert-manager.io
+              csi.cert-manager.io/common-name: "mtls-client"
+              csi.cert-manager.io/dns-names: "mtls-client.mtls-test.svc.cluster.local"
+              csi.cert-manager.io/duration: "24h"
+              csi.cert-manager.io/renew-before: "1h"
+              csi.cert-manager.io/key-usages: "client auth"
+        # CA bundle from trust-manager
+        - name: ca-bundle
+          configMap:
+            name: internal-ca-bundle
+        # Test scripts
+        - name: scripts
+          configMap:
+            name: mtls-client-scripts
+            defaultMode: 0755
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mtls-client-scripts
+  namespace: mtls-test
+data:
+  test-mtls.sh: |
+    #!/bin/sh
+    set -e
+
+    echo "=== mTLS Connection Test ==="
+    echo ""
+
+    SERVER_URL="https://mtls-server.mtls-test.svc.cluster.local:8443"
+    CERT="/etc/ssl/client/tls.crt"
+    KEY="/etc/ssl/client/tls.key"
+    CA="/etc/ssl/ca/ca-certificates.crt"
+
+    echo "1. Testing mTLS connection (with client cert)..."
+    RESULT=$(curl -s --connect-timeout 10 \
+        --cert "$CERT" \
+        --key "$KEY" \
+        --cacert "$CA" \
+        "$SERVER_URL/" 2>&1) || true
+    
+    if echo "$RESULT" | grep -q "mTLS OK"; then
+        echo "   ✓ SUCCESS: $RESULT"
+    else
+        echo "   ✗ FAILED: $RESULT"
+        exit 1
+    fi
+
+    echo ""
+    echo "2. Testing connection WITHOUT client cert (should fail)..."
+    RESULT=$(curl -s --connect-timeout 10 \
+        --cacert "$CA" \
+        "$SERVER_URL/" 2>&1) || true
+    
+    if echo "$RESULT" | grep -qi "error\|alert\|required"; then
+        echo "   ✓ SUCCESS: Connection correctly rejected (no client cert)"
+    else
+        echo "   ✗ FAILED: Connection should have been rejected"
+        exit 1
+    fi
+
+    echo ""
+    echo "=== All mTLS tests passed! ==="
+
+  show-certs.sh: |
+    #!/bin/sh
+    echo "=== Certificate Information ==="
+    echo ""
+    echo "Client Certificate:"
+    openssl x509 -in /etc/ssl/client/tls.crt -noout -subject -issuer -dates 2>/dev/null || echo "Not found"
+    echo ""
+    echo "CA Certificate:"
+    openssl x509 -in /etc/ssl/ca/ca-certificates.crt -noout -subject -issuer -dates 2>/dev/null || echo "Not found"
