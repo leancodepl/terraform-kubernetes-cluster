@@ -1,0 +1,168 @@
+# =============================================================================
+# mTLS Module Integration Tests
+# =============================================================================
+# Runs the mTLS module in a k3d cluster to verify it works end-to-end.
+#
+# Triggers:
+#   - Push to main (changes to mtls module)
+#   - Pull requests (changes to mtls module)
+#   - Manual dispatch
+# =============================================================================
+
+name: Test mTLS Module
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mtls/**'
+      - 'tests/mtls/**'
+      - '.github/workflows/test-mtls.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mtls/**'
+      - 'tests/mtls/**'
+      - '.github/workflows/test-mtls.yml'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable debug mode (keeps cluster on failure)'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent runs to avoid k3d cluster conflicts
+concurrency:
+  group: mtls-test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TERRAFORM_VERSION: '1.14.3'
+
+jobs:
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        working-directory: mtls
+
+      - name: Terraform Init (validate only)
+        run: terraform init -backend=false
+        working-directory: mtls
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: mtls
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: validate
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Setup Kubernetes Tools
+        uses: yokawasa/action-setup-kube-tools@v0.13.1
+        with:
+          setup-tools: |
+            kubectl
+            helm
+          kubectl: '1.35.0'
+          helm: '3.17.3'
+
+      - name: Create k3d Cluster
+        uses: AbsaOSS/k3d-action@v2
+        with:
+          cluster-name: mtls-test
+          args: --config=tests/mtls/k3d-cluster.yaml
+
+      - name: Verify Cluster Ready
+        run: |
+          kubectl cluster-info
+          kubectl wait --for=condition=Ready nodes --all --timeout=120s
+
+      - name: Run Setup Script
+        run: |
+          chmod +x tests/mtls/setup.sh
+          ./tests/mtls/setup.sh --skip-cluster --ci
+
+      - name: Run Full Verification
+        run: |
+          chmod +x tests/mtls/verify.sh
+          ./tests/mtls/verify.sh --ci
+
+      - name: Show Infrastructure Status
+        if: always()
+        run: |
+          echo "=== ClusterIssuer Status ==="
+          kubectl get clusterissuer -o wide 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== Bundle Status ==="
+          kubectl get bundle -o wide 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== Terraform Outputs ==="
+          cd tests/mtls && terraform output 2>/dev/null || echo "Not available"
+
+      - name: Debug Info (on failure)
+        if: failure()
+        run: |
+          echo "=== Cluster Info ==="
+          kubectl cluster-info 2>/dev/null || echo "Cluster not available"
+          
+          echo ""
+          echo "=== All Pods ==="
+          kubectl get pods -A 2>/dev/null || true
+          
+          echo ""
+          echo "=== cert-manager logs ==="
+          kubectl logs -n cert-manager deploy/cert-manager --tail=100 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== trust-manager logs ==="
+          kubectl logs -n cert-manager deploy/trust-manager --tail=100 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== CSI driver logs ==="
+          kubectl logs -n cert-manager -l app.kubernetes.io/name=cert-manager-csi-driver --tail=100 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== Events in mtls-test namespace ==="
+          kubectl get events -n mtls-test --sort-by='.lastTimestamp' 2>/dev/null || echo "Not available"
+          
+          echo ""
+          echo "=== Terraform state ==="
+          cd tests/mtls && terraform show 2>/dev/null || echo "Not available"
+
+      - name: Keep cluster for debugging
+        if: failure() && inputs.debug
+        run: |
+          echo "::warning::Debug mode enabled - sleeping for 15 minutes"
+          echo "To connect: k3d kubeconfig get mtls-test"
+          sleep 900
+
+      - name: Cleanup
+        if: always() && !inputs.debug
+        run: |
+          chmod +x tests/mtls/teardown.sh
+          ./tests/mtls/teardown.sh || true
