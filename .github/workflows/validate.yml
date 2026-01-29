@@ -91,18 +91,22 @@ jobs:
         uses: terraform-linters/setup-tflint@v4
         with:
           tflint_version: v${{ env.TFLINT_VERSION }}
+          github_token: ${{ github.token }}
 
       - name: TFLint Init
         run: tflint --init
 
       - name: TFLint
         run: tflint --recursive
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Setup Trivy
         uses: aquasecurity/setup-trivy@v0.2.3
         with:
           version: v${{ env.TRIVY_VERSION }}
           cache: true
+          token: ${{ github.token }}
 
       - name: Trivy Security Scan
         run: trivy config --exit-code 1 .
