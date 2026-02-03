@@ -60,6 +60,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   workload_identity_enabled        = true
 
   image_cleaner_interval_hours = 48
+  automatic_upgrade_channel    = var.automatic_upgrade_channel
   node_os_upgrade_channel      = var.node_os_upgrade_channel
 
   dynamic "maintenance_window_auto_upgrade" {

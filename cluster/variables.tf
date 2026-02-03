@@ -151,3 +151,14 @@ variable "node_os_upgrade_channel" {
   }
 }
 
+variable "automatic_upgrade_channel" {
+  description = "The automatic upgrade channel for the Kubernetes cluster."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.automatic_upgrade_channel == null || contains(["patch", "rapid", "node-image", "stable", "none"], var.automatic_upgrade_channel)
+    error_message = "automatic_upgrade_channel must be one of: patch, rapid, node-image, stable, none."
+  }
+}
+
