@@ -74,3 +74,18 @@ variable "traefik_config" {
   type        = map(any)
   default     = {}
 }
+
+variable "mtls_config" {
+  description = "mTLS configuration from mtls module. Pass module.mtls.traefik_config to enable."
+  type = object({
+    issuer_name            = string
+    issuer_kind            = string
+    issuer_group           = string
+    trust_bundle_name      = string
+    root_ca_secret_name    = string
+    ca_secret_namespace    = string
+    namespace_label        = string
+    cert_manager_namespace = string
+  })
+  default = null
+}
