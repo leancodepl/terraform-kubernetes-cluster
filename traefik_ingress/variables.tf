@@ -74,6 +74,11 @@ variable "traefik_config" {
   type        = map(any)
   default     = {}
 }
+variable "traefik_chart_version" {
+  description = "Version of the Traefik Helm chart."
+  type        = string
+  default     = "37.4.0" # pinned for backward compatibility
+}
 
 variable "ambient_mesh_enabled" {
   description = "Enroll the Traefik namespace in the Istio ambient mesh for mTLS."
