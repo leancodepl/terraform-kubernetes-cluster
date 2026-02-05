@@ -74,3 +74,9 @@ variable "traefik_config" {
   type        = map(any)
   default     = {}
 }
+
+variable "traefik_chart_version" {
+  description = "Version of the Traefik Helm chart."
+  type        = string
+  default     = "37.4.0" # pinned for backward compatibility
+}
