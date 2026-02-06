@@ -67,7 +67,12 @@ variable "istiod_resources" {
 }
 
 variable "istio_config" {
-  description = "Custom Helm values to merge into the Istio chart configuration."
-  type        = map(any)
-  default     = {}
+  description = "Per-chart custom Helm values to merge into the Istio chart configuration."
+  type = object({
+    base    = optional(map(any), {})
+    istiod  = optional(map(any), {})
+    cni     = optional(map(any), {})
+    ztunnel = optional(map(any), {})
+  })
+  default = {}
 }

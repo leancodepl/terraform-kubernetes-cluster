@@ -1,21 +1,11 @@
 locals {
   istio_repository = "https://istio-release.storage.googleapis.com/charts"
 
-  istio_base_config = {}
-
   istiod_resources = {
     "pilot.resources.requests.cpu"    = var.istiod_resources.requests.cpu
     "pilot.resources.requests.memory" = var.istiod_resources.requests.memory
     "pilot.resources.limits.cpu"      = var.istiod_resources.limits.cpu
     "pilot.resources.limits.memory"   = var.istiod_resources.limits.memory
-  }
-
-  istiod_config = merge(local.istiod_resources, {
-    "profile" = "ambient"
-  })
-
-  cni_config = {
-    "profile" = "ambient"
   }
 
   ztunnel_resources = {
@@ -25,11 +15,17 @@ locals {
     "resources.limits.memory"   = var.ztunnel_resources.limits.memory
   }
 
-  ztunnel_config = local.ztunnel_resources
-}
+  istio_base_config = var.istio_config.base
 
-locals {
-  istio_config = merge(local.istio_base_config, var.istio_config)
+  istiod_config = merge(local.istiod_resources, {
+    "profile" = "ambient"
+  }, var.istio_config.istiod)
+
+  cni_config = merge({
+    "profile" = "ambient"
+  }, var.istio_config.cni)
+
+  ztunnel_config = merge(local.ztunnel_resources, var.istio_config.ztunnel)
 }
 
 resource "kubernetes_namespace_v1" "istio_system" {
@@ -50,7 +46,7 @@ resource "helm_release" "istio_base" {
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
   set = [
-    for k, v in local.istio_config : {
+    for k, v in local.istio_base_config : {
       name  = k
       value = v
     }
