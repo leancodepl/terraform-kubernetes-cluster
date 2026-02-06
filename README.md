@@ -24,4 +24,3 @@ terraform import module.monitoring.kubernetes_namespace_v1.main monitoring
 | `monitoring`       | `kubernetes_namespace_v1.main`         | `monitoring`   |
 | `traefik_ingress`  | `kubernetes_namespace_v1.traefik`      | `traefik`      |
 | `cluster_domain`   | `kubernetes_namespace_v1.external_dns` | `external-dns` |
-| `ambient_istio`    | `kubernetes_namespace_v1.istio_system` | `istio-system` |
