@@ -1,0 +1,12 @@
+apiVersion: v2
+name: gateway-api-crds
+description: Kubernetes Gateway API CRDs (standard channel)
+
+type: application
+
+# Both version and appVersion track the Gateway API release version.
+# To update, bump these and re-download the CRDs:
+#   curl -sL https://github.com/kubernetes-sigs/gateway-api/releases/download/v<VERSION>/standard-install.yaml \
+#     -o templates/standard-install.yaml
+version: 1.4.0
+appVersion: "1.4.0"

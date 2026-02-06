@@ -74,3 +74,9 @@ variable "traefik_config" {
   type        = map(any)
   default     = {}
 }
+
+variable "ambient_mesh_enabled" {
+  description = "Enroll the Traefik namespace in the Istio ambient mesh for mTLS."
+  type        = bool
+  default     = false
+}
