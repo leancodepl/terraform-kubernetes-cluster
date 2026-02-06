@@ -78,8 +78,10 @@ locals {
 
 resource "kubernetes_namespace_v1" "traefik" {
   metadata {
-    name   = "traefik"
-    labels = local.ns_labels
+    name = "traefik"
+    labels = merge(local.ns_labels, var.ambient_mesh_enabled ? {
+      "istio.io/dataplane-mode" = "ambient"
+    } : {})
   }
 }
 
