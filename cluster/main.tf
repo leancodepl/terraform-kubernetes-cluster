@@ -25,4 +25,8 @@ locals {
   tags = merge(var.tags, {
     cluster_name = var.prefix
   })
+
+  cluster_name        = "${var.prefix}-k8s-cluster"
+  normalized_location = lower(replace(var.resource_group.location, " ", ""))
+  node_resource_group = "MC_${var.resource_group.name}_${local.cluster_name}_${local.normalized_location}"
 }

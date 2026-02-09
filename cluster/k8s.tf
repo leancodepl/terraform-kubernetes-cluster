@@ -2,6 +2,7 @@ resource "azurerm_kubernetes_cluster" "cluster" {
   name                = "${var.prefix}-k8s-cluster"
   resource_group_name = azurerm_resource_group.cluster.name
   location            = azurerm_resource_group.cluster.location
+  node_resource_group = local.node_resource_group
 
   dns_prefix         = var.prefix
   kubernetes_version = var.cluster_version
@@ -127,6 +128,5 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 }
 
 data "azurerm_resource_group" "cluster_node_group" {
-  name = azurerm_kubernetes_cluster.cluster.node_resource_group
+  name = local.node_resource_group
 }
-
