@@ -32,12 +32,12 @@ variable "ztunnel_resources" {
   })
   default = {
     requests = {
-      cpu    = "200m"
-      memory = "512Mi"
+      cpu    = "50m"
+      memory = "128Mi"
     }
     limits = {
-      cpu    = "2"
-      memory = "1Gi"
+      cpu    = "500m"
+      memory = "512Mi"
     }
   }
 }
@@ -56,12 +56,12 @@ variable "istiod_resources" {
   })
   default = {
     requests = {
-      cpu    = "500m"
-      memory = "2Gi"
+      cpu    = "100m"
+      memory = "256Mi"
     }
     limits = {
-      cpu    = "2"
-      memory = "4Gi"
+      cpu    = "500m"
+      memory = "1Gi"
     }
   }
 }
