@@ -37,6 +37,7 @@ resource "kubernetes_namespace_v1" "istio_system" {
   }
 }
 
+# Istio CRDs and cluster-wide RBAC roles.
 resource "helm_release" "istio_base" {
   name       = "istio-base"
   repository = local.istio_repository
@@ -53,16 +54,7 @@ resource "helm_release" "istio_base" {
   ]
 }
 
-resource "helm_release" "gateway_api_crds" {
-  count = var.install_gateway_api_crds ? 1 : 0
-
-  name      = "gateway-api-crds"
-  namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
-  chart     = "${path.module}/charts/gateway-api-crds"
-
-  depends_on = [helm_release.istio_base]
-}
-
+# Istio control plane (discovery service) in ambient mode.
 resource "helm_release" "istiod" {
   name       = "istiod"
   repository = local.istio_repository
@@ -84,6 +76,7 @@ resource "helm_release" "istiod" {
   ]
 }
 
+# CNI node agent that configures pod networking for the ambient mesh.
 resource "helm_release" "istio_cni" {
   name       = "istio-cni"
   repository = local.istio_repository
@@ -102,6 +95,7 @@ resource "helm_release" "istio_cni" {
   depends_on = [helm_release.istiod]
 }
 
+# Per-node proxy (DaemonSet) that handles L4 mTLS between pods.
 resource "helm_release" "ztunnel" {
   name       = "ztunnel"
   repository = local.istio_repository
