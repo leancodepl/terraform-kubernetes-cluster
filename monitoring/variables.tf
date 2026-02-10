@@ -2,7 +2,6 @@ variable "plugin" {
   description = "The output of cluster module for plugins."
   type = object({
     prefix = string
-    tags   = map(string)
   })
 }
 
