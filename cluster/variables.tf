@@ -162,3 +162,9 @@ variable "automatic_upgrade_channel" {
   }
 }
 
+variable "node_resource_group" {
+  description = "Override for the node resource group name. If not set, defaults to MC_{resource_group}_{cluster_name}_{location}."
+  type        = string
+  default     = null
+}
+
