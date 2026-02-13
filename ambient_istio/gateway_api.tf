@@ -5,7 +5,7 @@
 # is backwards-compatible -- upgrading CRDs is additive and safe for existing resources.
 #
 # AKS note: AKS offers managed Gateway API CRDs (preview), currently v1.2.1/v1.3.0,
-# but those are still too low for istio.
+# but those can lag behind the versions required by newer Istio releases.
 # https://learn.microsoft.com/en-us/azure/aks/managed-gateway-api
 resource "helm_release" "gateway_api_crds" {
   count = var.install_gateway_api_crds ? 1 : 0
