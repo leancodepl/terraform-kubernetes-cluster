@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - ".github/workflows/validate.yml"
   push:
     branches: [main]
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - ".github/workflows/validate.yml"
 
 env:
@@ -51,6 +53,25 @@ jobs:
           files_ignore: |
             .github/**
           matrix: true
+
+  discover_modules:
+    runs-on: ubuntu-latest
+    outputs:
+      directories: ${{ steps.discover.outputs.directories }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Discover module directories
+        id: discover
+        shell: bash
+        run: |
+          directories=$(for d in */; do
+            if [ -f "${d}main.tf" ]; then
+              echo "${d%/}"
+            fi
+          done | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "directories=$directories" >> "$GITHUB_OUTPUT"
 
   validate:
     needs: detect-changes
@@ -110,4 +131,36 @@ jobs:
 
       - name: Trivy Security Scan
         run: trivy config --exit-code 1 .
+
+  test-modules:
+    needs: discover_modules
+    if: ${{ needs.discover_modules.outputs.directories != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJson(needs.discover_modules.outputs.directories) }}
+    name: Test ${{ matrix.directory }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure Git for public modules
+        run: |
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+
+      - name: Terraform Init
+        run: terraform init -backend=false -input=false
+
+      - name: Terraform Test
+        run: terraform test -no-color
 
