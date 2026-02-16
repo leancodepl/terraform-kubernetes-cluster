@@ -8,9 +8,10 @@
 # but those can lag behind the versions required by newer Istio releases.
 # https://learn.microsoft.com/en-us/azure/aks/managed-gateway-api
 resource "helm_release" "gateway_api_crds" {
-  count = var.install_gateway_api_crds ? 1 : 0
+  count = var.install_gateway_api_crds == "none" ? 0 : 1
 
-  name      = "gateway-api-crds"
-  namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
-  chart     = "${path.module}/charts/gateway-api-crds"
+  name           = "gateway-api-crds"
+  namespace      = kubernetes_namespace_v1.istio_system.metadata[0].name
+  chart          = "${path.module}/charts/gateway-api-crds"
+  take_ownership = var.install_gateway_api_crds == "install_and_take_ownership"
 }
