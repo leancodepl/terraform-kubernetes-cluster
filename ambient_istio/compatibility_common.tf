@@ -1,6 +1,6 @@
 locals {
-  kubernetes_validation_enabled  = var.kubernetes_compatibility != "skip"
-  gateway_api_validation_enabled = var.gateway_api_compatibility != "skip"
+  kubernetes_validation_enabled  = var.compatibility.kubernetes.mode != "skip"
+  gateway_api_validation_enabled = var.compatibility.gateway_api.mode != "skip"
 
   # Normalize user input once and reuse it everywhere.
   istio_chart_version = trimprefix(trimspace(var.istio_version), "v")
@@ -23,5 +23,5 @@ locals {
     tonumber(local.effective_kubernetes_parts[1]),
   )
 
-  gateway_api_args_fetch_enabled = local.gateway_api_validation_enabled && var.gateway_api_min_version_override == null
+  gateway_api_args_fetch_enabled = local.gateway_api_validation_enabled && var.compatibility.gateway_api.min_version_override == null
 }

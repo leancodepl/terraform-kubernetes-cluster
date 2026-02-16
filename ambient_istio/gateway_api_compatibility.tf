@@ -18,7 +18,7 @@ data "kubernetes_resources" "gateway_api_crd" {
 locals {
   istio_release_args_http_status = try(data.http.istio_release_args[0].status_code, null)
 
-  gateway_api_required_version_raw = var.gateway_api_min_version_override != null ? trimspace(var.gateway_api_min_version_override) : try(
+  gateway_api_required_version_raw = var.compatibility.gateway_api.min_version_override != null ? trimspace(var.compatibility.gateway_api.min_version_override) : try(
     trimspace(yamldecode(data.http.istio_release_args[0].response_body).k8s_gateway_api_version),
     null,
   )
@@ -73,8 +73,8 @@ resource "terraform_data" "gateway_api_compatibility_guard" {
     istio_version                    = local.istio_chart_version
     istio_minor_version              = local.istio_minor_version
     install_gateway_api_crds         = var.install_gateway_api_crds
-    gateway_api_compatibility        = var.gateway_api_compatibility
-    gateway_api_min_version_override = var.gateway_api_min_version_override
+    gateway_api_compatibility        = var.compatibility.gateway_api.mode
+    gateway_api_min_version_override = var.compatibility.gateway_api.min_version_override
   }
 
   lifecycle {

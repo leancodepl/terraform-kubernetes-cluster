@@ -21,47 +21,40 @@ variable "istio_version" {
   }
 }
 
-variable "kubernetes_compatibility" {
-  description = "Kubernetes compatibility mode: supported, tested, or skip."
-  type        = string
-  default     = "supported"
+variable "compatibility" {
+  description = "Compatibility validation configuration for Kubernetes and Gateway API checks."
+  type = object({
+    kubernetes = optional(object({
+      mode               = optional(string, "supported")
+      support_status_url = optional(string, "https://raw.githubusercontent.com/istio/istio.io/master/data/compatibility/supportStatus.yml")
+    }), {})
+    gateway_api = optional(object({
+      mode                 = optional(string, "enforced")
+      min_version_override = optional(string, null)
+    }), {})
+  })
+  default = {}
 
   validation {
-    condition     = contains(["skip", "supported", "tested"], var.kubernetes_compatibility)
-    error_message = "kubernetes_compatibility must be one of: skip, supported, tested."
+    condition     = contains(["skip", "supported", "tested"], var.compatibility.kubernetes.mode)
+    error_message = "compatibility.kubernetes.mode must be one of: skip, supported, tested."
   }
-}
-
-variable "istio_support_status_url" {
-  description = "URL to Istio supportStatus.yml used for Kubernetes compatibility checks."
-  type        = string
-  default     = "https://raw.githubusercontent.com/istio/istio.io/master/data/compatibility/supportStatus.yml"
 
   validation {
-    condition     = can(regex("^https?://", trimspace(var.istio_support_status_url)))
-    error_message = "istio_support_status_url must be a valid HTTP/HTTPS URL."
+    condition     = can(regex("^https?://", trimspace(var.compatibility.kubernetes.support_status_url)))
+    error_message = "compatibility.kubernetes.support_status_url must be a valid HTTP/HTTPS URL."
   }
-}
-
-variable "gateway_api_compatibility" {
-  description = "Gateway API compatibility mode: enforced or skip."
-  type        = string
-  default     = "enforced"
 
   validation {
-    condition     = contains(["enforced", "skip"], var.gateway_api_compatibility)
-    error_message = "gateway_api_compatibility must be one of: enforced, skip."
+    condition     = contains(["enforced", "skip"], var.compatibility.gateway_api.mode)
+    error_message = "compatibility.gateway_api.mode must be one of: enforced, skip."
   }
-}
-
-variable "gateway_api_min_version_override" {
-  description = "Optional Gateway API minimum version override (for example v1.4.0), useful for pinned/offline/pre-release workflows."
-  type        = string
-  default     = null
 
   validation {
-    condition     = var.gateway_api_min_version_override == null || can(regex("^v?[0-9]+\\.[0-9]+\\.[0-9]+$", trimspace(var.gateway_api_min_version_override)))
-    error_message = "gateway_api_min_version_override must be a semantic version (for example v1.4.0) when set."
+    condition = var.compatibility.gateway_api.min_version_override == null || can(
+      regex("^v?[0-9]+\\.[0-9]+\\.[0-9]+$", trimspace(var.compatibility.gateway_api.min_version_override))
+    )
+    error_message = "compatibility.gateway_api.min_version_override must be a semantic version (for example v1.4.0) when set."
   }
 }
 

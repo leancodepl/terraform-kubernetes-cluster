@@ -1,6 +1,6 @@
 data "http" "istio_support_status" {
   count = local.kubernetes_validation_enabled ? 1 : 0
-  url   = var.istio_support_status_url
+  url   = var.compatibility.kubernetes.support_status_url
 
   request_headers = {
     Accept = "application/x-yaml"
@@ -21,7 +21,7 @@ locals {
   selected_istio_support_entry = try(local.istio_support_entries_for_minor[0], null)
 
   kubernetes_versions_from_matrix = local.selected_istio_support_entry == null ? [] : (
-    var.kubernetes_compatibility == "tested"
+    var.compatibility.kubernetes.mode == "tested"
     ? distinct(concat(
       try(local.selected_istio_support_entry.k8sVersions, []),
       try(local.selected_istio_support_entry.testedK8sVersions, []),
@@ -53,7 +53,7 @@ resource "terraform_data" "kubernetes_compatibility_guard" {
     istio_version                = local.istio_chart_version
     istio_minor_version          = local.istio_minor_version
     effective_kubernetes_version = local.effective_kubernetes_version
-    kubernetes_compatibility     = var.kubernetes_compatibility
+    kubernetes_compatibility     = var.compatibility.kubernetes.mode
   }
 
   lifecycle {
@@ -61,7 +61,7 @@ resource "terraform_data" "kubernetes_compatibility_guard" {
       condition = local.istio_support_status_http_status == 200
       error_message = format(
         "Failed to fetch Istio support matrix from %s (HTTP status: %s). Use kubernetes_compatibility=\"skip\" to bypass validation.",
-        var.istio_support_status_url,
+        var.compatibility.kubernetes.support_status_url,
         local.istio_support_status_http_status == null ? "unknown" : tostring(local.istio_support_status_http_status),
       )
     }
@@ -71,7 +71,7 @@ resource "terraform_data" "kubernetes_compatibility_guard" {
       error_message = format(
         "Istio minor version %s was not found in support matrix from %s. Use kubernetes_compatibility=\"skip\" to bypass validation (for example for prerelease Istio builds).",
         local.istio_minor_version,
-        var.istio_support_status_url,
+        var.compatibility.kubernetes.support_status_url,
       )
     }
 
@@ -81,7 +81,7 @@ resource "terraform_data" "kubernetes_compatibility_guard" {
         "Kubernetes version '%s' is not compatible with Istio %s in mode '%s'. Allowed Kubernetes versions: %s. Use kubernetes_compatibility=\"skip\" to bypass this check.",
         local.effective_kubernetes_minor_version,
         local.istio_minor_version,
-        var.kubernetes_compatibility,
+        var.compatibility.kubernetes.mode,
         length(local.allowed_kubernetes_minor_versions) > 0 ? join(", ", local.allowed_kubernetes_minor_versions) : "none",
       )
     }
