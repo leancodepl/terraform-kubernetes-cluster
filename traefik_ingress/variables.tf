@@ -75,7 +75,7 @@ variable "traefik_config" {
   default     = {}
 }
 variable "traefik_chart_version" {
-  description = "Version of the Traefik Helm chart."
+  description = "Version of the Traefik Helm chart. See: https://github.com/traefik/traefik-helm-chart/releases."
   type        = string
   default     = "37.4.0" # pinned for backward compatibility
 }
