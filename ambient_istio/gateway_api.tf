@@ -10,7 +10,8 @@
 resource "helm_release" "gateway_api_crds" {
   count = var.install_gateway_api_crds ? 1 : 0
 
-  name      = "gateway-api-crds"
-  namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
-  chart     = "${path.module}/charts/gateway-api-crds"
+  name           = "gateway-api-crds"
+  namespace      = kubernetes_namespace_v1.istio_system.metadata[0].name
+  chart          = "${path.module}/charts/gateway-api-crds"
+  take_ownership = true
 }
