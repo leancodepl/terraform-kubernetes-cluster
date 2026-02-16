@@ -60,3 +60,9 @@ variable "datadog_env" {
   type        = map(string)
   default     = {}
 }
+
+variable "datadog_chart_version" {
+  description = "Version of the Datadog Helm chart. See: https://github.com/DataDog/helm-charts/releases."
+  type        = string
+  default     = "3.154.1" # pinned for backward compatibility
+}

@@ -46,3 +46,9 @@ variable "resources" {
     }
   }
 }
+
+variable "external_dns_chart_version" {
+  description = "Version of the External DNS Helm chart. See: https://kubernetes-sigs.github.io/external-dns."
+  type        = string
+  default     = "1.19.0" # pinned for backward compatibility
+}
