@@ -52,6 +52,8 @@ resource "helm_release" "istio_base" {
       value = v
     }
   ]
+
+  depends_on = [terraform_data.kubernetes_compatibility_guard]
 }
 
 # Istio control plane (discovery service) in ambient mode.
@@ -71,6 +73,7 @@ resource "helm_release" "istiod" {
   ]
 
   depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
     helm_release.istio_base,
     helm_release.gateway_api_crds,
   ]
@@ -92,7 +95,10 @@ resource "helm_release" "istio_cni" {
     }
   ]
 
-  depends_on = [helm_release.istiod]
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    helm_release.istiod,
+  ]
 }
 
 # Per-node proxy (DaemonSet) that handles L4 mTLS between pods.
@@ -111,5 +117,8 @@ resource "helm_release" "ztunnel" {
     }
   ]
 
-  depends_on = [helm_release.istio_cni]
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    helm_release.istio_cni,
+  ]
 }
