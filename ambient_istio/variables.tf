@@ -11,9 +11,14 @@ variable "istio_version" {
 }
 
 variable "install_gateway_api_crds" {
-  description = "Install Kubernetes Gateway API CRDs. Set to false if already installed on the cluster by other means."
-  type        = bool
-  default     = true
+  description = "Gateway API CRD management mode: install, install_and_take_ownership, or none."
+  type        = string
+  default     = "install"
+
+  validation {
+    condition     = contains(["none", "install", "install_and_take_ownership"], var.install_gateway_api_crds)
+    error_message = "install_gateway_api_crds must be one of: none, install, install_and_take_ownership."
+  }
 }
 
 variable "ztunnel_resources" {
