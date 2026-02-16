@@ -42,7 +42,7 @@ resource "helm_release" "istio_base" {
   name       = "istio-base"
   repository = local.istio_repository
   chart      = "base"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -64,7 +64,7 @@ resource "helm_release" "istiod" {
   name       = "istiod"
   repository = local.istio_repository
   chart      = "istiod"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -88,7 +88,7 @@ resource "helm_release" "istio_cni" {
   name       = "istio-cni"
   repository = local.istio_repository
   chart      = "cni"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -111,7 +111,7 @@ resource "helm_release" "ztunnel" {
   name       = "ztunnel"
   repository = local.istio_repository
   chart      = "ztunnel"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 

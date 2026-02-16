@@ -6,7 +6,7 @@ variable "plugin" {
   })
 
   validation {
-    condition     = can(regex("\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", var.plugin.cluster_version))
+    condition     = can(regex("^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", trimspace(var.plugin.cluster_version)))
     error_message = "plugin.cluster_version must match cluster module version format (for example 1.31.0)."
   }
 }
@@ -32,6 +32,17 @@ variable "kubernetes_compatibility" {
   }
 }
 
+variable "istio_support_status_url" {
+  description = "URL to Istio supportStatus.yml used for Kubernetes compatibility checks."
+  type        = string
+  default     = "https://raw.githubusercontent.com/istio/istio.io/master/data/compatibility/supportStatus.yml"
+
+  validation {
+    condition     = can(regex("^https?://", trimspace(var.istio_support_status_url)))
+    error_message = "istio_support_status_url must be a valid HTTP/HTTPS URL."
+  }
+}
+
 variable "gateway_api_compatibility" {
   description = "Gateway API compatibility mode: enforced or skip."
   type        = string
@@ -44,7 +55,7 @@ variable "gateway_api_compatibility" {
 }
 
 variable "gateway_api_min_version_override" {
-  description = "Optional Gateway API minimum version override (for example v1.4.0)."
+  description = "Optional Gateway API minimum version override (for example v1.4.0), useful for pinned/offline/pre-release workflows."
   type        = string
   default     = null
 
