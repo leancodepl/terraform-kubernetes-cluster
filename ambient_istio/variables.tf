@@ -32,6 +32,28 @@ variable "kubernetes_compatibility" {
   }
 }
 
+variable "gateway_api_compatibility" {
+  description = "Gateway API compatibility mode: enforced or skip."
+  type        = string
+  default     = "enforced"
+
+  validation {
+    condition     = contains(["enforced", "skip"], var.gateway_api_compatibility)
+    error_message = "gateway_api_compatibility must be one of: enforced, skip."
+  }
+}
+
+variable "gateway_api_min_version_override" {
+  description = "Optional Gateway API minimum version override (for example v1.4.0)."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.gateway_api_min_version_override == null || can(regex("^v?[0-9]+\\.[0-9]+\\.[0-9]+$", trimspace(var.gateway_api_min_version_override)))
+    error_message = "gateway_api_min_version_override must be a semantic version (for example v1.4.0) when set."
+  }
+}
+
 variable "install_gateway_api_crds" {
   description = "Gateway API CRD management mode: install, install_and_take_ownership, or none."
   type        = string

@@ -15,5 +15,8 @@ resource "helm_release" "gateway_api_crds" {
   chart          = "${path.module}/charts/gateway-api-crds"
   take_ownership = var.install_gateway_api_crds == "install_and_take_ownership"
 
-  depends_on = [terraform_data.kubernetes_compatibility_guard]
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    terraform_data.gateway_api_compatibility_guard,
+  ]
 }
