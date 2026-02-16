@@ -8,7 +8,6 @@ variable "plugin" {
 variable "istio_version" {
   description = "The version of Istio Helm charts to install."
   type        = string
-  default     = "1.28.3"
 }
 
 variable "install_gateway_api_crds" {
