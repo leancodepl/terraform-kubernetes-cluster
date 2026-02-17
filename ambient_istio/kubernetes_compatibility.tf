@@ -1,12 +1,7 @@
-data "http" "istio_support_status" {
-  count = local.kubernetes_validation_enabled ? 1 : 0
-  url   = var.compatibility.kubernetes.support_status_url
-
-  request_headers = {
-    Accept = "application/x-yaml"
-  }
-}
-
+# compatibility.kubernetes.mode:
+# - supported: allow only Kubernetes versions listed by Istio as supported (k8sVersions).
+# - tested: also allow tested-only versions (k8sVersions + testedK8sVersions), which is broader.
+# - skip: do not enforce Kubernetes compatibility matrix checks.
 locals {
   istio_support_status_http_status = try(data.http.istio_support_status[0].status_code, null)
   istio_support_matrix = local.kubernetes_validation_enabled ? try(
@@ -44,6 +39,15 @@ locals {
   ]))
 
   is_kubernetes_version_compatible = contains(local.allowed_kubernetes_minor_versions, local.effective_kubernetes_minor_version)
+}
+
+data "http" "istio_support_status" {
+  count = local.kubernetes_validation_enabled ? 1 : 0
+  url   = var.compatibility.kubernetes.support_status_url
+
+  request_headers = {
+    Accept = "application/x-yaml"
+  }
 }
 
 resource "terraform_data" "kubernetes_compatibility_guard" {

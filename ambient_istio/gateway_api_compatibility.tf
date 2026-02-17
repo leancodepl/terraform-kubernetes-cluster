@@ -1,30 +1,25 @@
-data "http" "istio_release_args" {
-  count = local.gateway_api_args_fetch_enabled ? 1 : 0
-  url   = local.istio_release_args_url
-
-  request_headers = {
-    Accept = "application/x-yaml"
-  }
-}
-
-data "kubernetes_resources" "gateway_api_crd" {
-  count = local.gateway_api_validation_enabled && var.install_gateway_api_crds == "none" ? 1 : 0
-
-  api_version    = "apiextensions.k8s.io/v1"
-  kind           = "CustomResourceDefinition"
-  field_selector = "metadata.name=gateways.gateway.networking.k8s.io"
-}
-
+# compatibility.gateway_api.mode:
+# - enforced: installed Gateway API version (vendored chart appVersion or unmanaged CRD bundle-version)
+#   must be >= required version from Istio release args or compatibility.gateway_api.min_version_override.
+# - skip: do not enforce Gateway API version compatibility.
 locals {
   istio_release_args_http_status = try(data.http.istio_release_args[0].status_code, null)
+  gateway_api_release_args = local.gateway_api_args_fetch_enabled ? try(
+    yamldecode(data.http.istio_release_args[0].response_body),
+    null,
+  ) : null
 
   gateway_api_required_version_raw = var.compatibility.gateway_api.min_version_override != null ? trimspace(var.compatibility.gateway_api.min_version_override) : try(
-    trimspace(yamldecode(data.http.istio_release_args[0].response_body).k8s_gateway_api_version),
+    trimspace(tostring(local.gateway_api_release_args.k8s_gateway_api_version)),
     null,
   )
 
+  gateway_api_vendored_chart = try(
+    yamldecode(file("${path.module}/charts/gateway-api-crds/Chart.yaml")),
+    null,
+  )
   gateway_api_vendored_version_raw = try(
-    trimspace(tostring(yamldecode(file("${path.module}/charts/gateway-api-crds/Chart.yaml")).appVersion)),
+    trimspace(tostring(local.gateway_api_vendored_chart.appVersion)),
     null,
   )
 
@@ -47,6 +42,7 @@ locals {
     regex(local.gateway_api_semver_pattern, local.gateway_api_installed_version_normalized)
   ) ? split(".", local.gateway_api_installed_version_normalized) : null
 
+  # Compare required and installed Gateway API versions as numeric semver tuples.
   gateway_api_required_version_tuple = local.gateway_api_required_version_parts == null ? null : [
     for part in local.gateway_api_required_version_parts : tonumber(part)
   ]
@@ -64,6 +60,23 @@ locals {
       )
     )
   )
+}
+
+data "http" "istio_release_args" {
+  count = local.gateway_api_args_fetch_enabled ? 1 : 0
+  url   = local.istio_release_args_url
+
+  request_headers = {
+    Accept = "application/x-yaml"
+  }
+}
+
+data "kubernetes_resources" "gateway_api_crd" {
+  count = local.gateway_api_validation_enabled && var.install_gateway_api_crds == "none" ? 1 : 0
+
+  api_version    = "apiextensions.k8s.io/v1"
+  kind           = "CustomResourceDefinition"
+  field_selector = "metadata.name=gateways.gateway.networking.k8s.io"
 }
 
 resource "terraform_data" "gateway_api_compatibility_guard" {
