@@ -16,8 +16,8 @@ variable "istio_version" {
   type        = string
 
   validation {
-    condition     = can(regex("^v?[0-9]+\\.[0-9]+([.][0-9A-Za-z+-]+)*$", trimspace(var.istio_version)))
-    error_message = "istio_version must start with a numeric major.minor (for example 1.28 or 1.28.3)."
+    condition     = can(regex("^v?\\d+\\.\\d+([.-][0-9A-Za-z+-]+)*$", trimspace(var.istio_version)))
+    error_message = "istio_version must start with numeric major.minor (for example 1.28, 1.28.3, or 1.28-rc1)."
   }
 }
 
@@ -52,7 +52,7 @@ variable "compatibility" {
 
   validation {
     condition = var.compatibility.gateway_api.min_version_override == null || can(
-      regex("^v?[0-9]+\\.[0-9]+\\.[0-9]+$", trimspace(var.compatibility.gateway_api.min_version_override))
+      regex("^v?\\d+\\.\\d+\\.\\d+$", trimspace(var.compatibility.gateway_api.min_version_override))
     )
     error_message = "compatibility.gateway_api.min_version_override must be a semantic version (for example v1.4.0) when set."
   }

@@ -81,7 +81,7 @@ resource "terraform_data" "gateway_api_compatibility_guard" {
     precondition {
       condition = !local.gateway_api_args_fetch_enabled || local.istio_release_args_http_status == 200
       error_message = format(
-        "Failed to fetch Istio release args for Istio minor %s from %s (HTTP status: %s). Set gateway_api_min_version_override or use gateway_api_compatibility=\"skip\".",
+        "Failed to fetch Istio release args for Istio minor %s from %s (HTTP status: %s). Set compatibility.gateway_api.min_version_override or compatibility.gateway_api.mode = \"skip\".",
         local.istio_minor_version,
         local.istio_release_args_url,
         local.istio_release_args_http_status == null ? "unknown" : tostring(local.istio_release_args_http_status),
@@ -91,7 +91,7 @@ resource "terraform_data" "gateway_api_compatibility_guard" {
     precondition {
       condition = local.gateway_api_required_version_raw != null
       error_message = format(
-        "Could not determine required Gateway API version for Istio minor %s. Expected args URL: %s. Set gateway_api_min_version_override or use gateway_api_compatibility=\"skip\".",
+        "Could not determine required Gateway API version for Istio minor %s. Expected args URL: %s. Set compatibility.gateway_api.min_version_override or compatibility.gateway_api.mode = \"skip\".",
         local.istio_minor_version,
         local.istio_release_args_url,
       )
@@ -104,7 +104,7 @@ resource "terraform_data" "gateway_api_compatibility_guard" {
 
     precondition {
       condition     = var.install_gateway_api_crds != "none" || local.gateway_api_crd_object != null
-      error_message = "install_gateway_api_crds is set to \"none\" but gateways.gateway.networking.k8s.io CRD was not found in the cluster. Install Gateway API CRDs or use gateway_api_compatibility=\"skip\"."
+      error_message = "install_gateway_api_crds is set to \"none\" but gateways.gateway.networking.k8s.io CRD was not found in the cluster. Install Gateway API CRDs or set compatibility.gateway_api.mode = \"skip\"."
     }
 
     precondition {
@@ -120,12 +120,12 @@ resource "terraform_data" "gateway_api_compatibility_guard" {
     precondition {
       condition = local.gateway_api_installed_meets_required
       error_message = var.install_gateway_api_crds == "none" ? format(
-        "Gateway API CRDs in the cluster are too old. Installed: %s, required: %s for Istio %s. Upgrade CRDs in the cluster or use gateway_api_compatibility=\"skip\".",
+        "Gateway API CRDs in the cluster are too old. Installed: %s, required: %s for Istio %s. Upgrade CRDs in the cluster or set compatibility.gateway_api.mode = \"skip\".",
         local.gateway_api_installed_version_raw,
         local.gateway_api_required_version_raw,
         local.istio_minor_version,
         ) : format(
-        "Vendored gateway-api-crds chart is too old. Installed (chart appVersion): %s, required: %s for Istio %s. Update charts/gateway-api-crds/Chart.yaml (version + appVersion) and charts/gateway-api-crds/templates/standard-install.yaml, or use gateway_api_compatibility=\"skip\".",
+        "Vendored gateway-api-crds chart is too old. Installed (chart appVersion): %s, required: %s for Istio %s. Update charts/gateway-api-crds/Chart.yaml (version + appVersion) and charts/gateway-api-crds/templates/standard-install.yaml, or set compatibility.gateway_api.mode = \"skip\".",
         local.gateway_api_installed_version_raw,
         local.gateway_api_required_version_raw,
         local.istio_minor_version,

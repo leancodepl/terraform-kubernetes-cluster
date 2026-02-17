@@ -3,12 +3,12 @@ locals {
   gateway_api_validation_enabled = var.compatibility.gateway_api.mode != "skip"
 
   # Normalize user input once and reuse it everywhere.
-  istio_chart_version = trimprefix(trimspace(var.istio_version), "v")
-  istio_version_parts = split(".", local.istio_chart_version)
+  istio_chart_version     = trimprefix(trimspace(var.istio_version), "v")
+  istio_major_minor_parts = regex("^(\\d+)\\.(\\d+)", local.istio_chart_version)
   istio_minor_version = format(
     "%d.%d",
-    tonumber(local.istio_version_parts[0]),
-    tonumber(local.istio_version_parts[1]),
+    tonumber(local.istio_major_minor_parts[0]),
+    tonumber(local.istio_major_minor_parts[1]),
   )
   istio_release_args_url = format(
     "https://raw.githubusercontent.com/istio/istio.io/release-%s/data/args.yml",
