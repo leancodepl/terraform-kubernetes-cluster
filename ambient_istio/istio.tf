@@ -42,7 +42,7 @@ resource "helm_release" "istio_base" {
   name       = "istio-base"
   repository = local.istio_repository
   chart      = "base"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -52,6 +52,11 @@ resource "helm_release" "istio_base" {
       value = v
     }
   ]
+
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    terraform_data.gateway_api_compatibility_guard,
+  ]
 }
 
 # Istio control plane (discovery service) in ambient mode.
@@ -59,7 +64,7 @@ resource "helm_release" "istiod" {
   name       = "istiod"
   repository = local.istio_repository
   chart      = "istiod"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -71,6 +76,8 @@ resource "helm_release" "istiod" {
   ]
 
   depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    terraform_data.gateway_api_compatibility_guard,
     helm_release.istio_base,
     helm_release.gateway_api_crds,
   ]
@@ -81,7 +88,7 @@ resource "helm_release" "istio_cni" {
   name       = "istio-cni"
   repository = local.istio_repository
   chart      = "cni"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -92,7 +99,11 @@ resource "helm_release" "istio_cni" {
     }
   ]
 
-  depends_on = [helm_release.istiod]
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    terraform_data.gateway_api_compatibility_guard,
+    helm_release.istiod,
+  ]
 }
 
 # Per-node proxy (DaemonSet) that handles L4 mTLS between pods.
@@ -100,7 +111,7 @@ resource "helm_release" "ztunnel" {
   name       = "ztunnel"
   repository = local.istio_repository
   chart      = "ztunnel"
-  version    = var.istio_version
+  version    = local.istio_chart_version
 
   namespace = kubernetes_namespace_v1.istio_system.metadata[0].name
 
@@ -111,5 +122,9 @@ resource "helm_release" "ztunnel" {
     }
   ]
 
-  depends_on = [helm_release.istio_cni]
+  depends_on = [
+    terraform_data.kubernetes_compatibility_guard,
+    terraform_data.gateway_api_compatibility_guard,
+    helm_release.istio_cni,
+  ]
 }

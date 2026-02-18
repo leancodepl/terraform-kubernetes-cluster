@@ -1,13 +1,61 @@
 variable "plugin" {
   description = "The output of cluster module for plugins."
   type = object({
-    prefix = string
+    prefix          = string
+    cluster_version = string
   })
+
+  validation {
+    condition     = can(regex("^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", trimspace(var.plugin.cluster_version)))
+    error_message = "plugin.cluster_version must match cluster module version format (for example 1.31.0)."
+  }
 }
 
 variable "istio_version" {
   description = "The version of Istio Helm charts to install."
   type        = string
+
+  validation {
+    condition     = can(regex("^v?\\d+\\.\\d+([.-][0-9A-Za-z+-]+)*$", trimspace(var.istio_version)))
+    error_message = "istio_version must start with numeric major.minor (for example 1.28, 1.28.3, or 1.28-rc1)."
+  }
+}
+
+variable "compatibility" {
+  description = "Compatibility validation configuration for Kubernetes and Gateway API checks."
+  type = object({
+    kubernetes = optional(object({
+      mode               = optional(string, "supported")
+      support_status_url = optional(string, "https://raw.githubusercontent.com/istio/istio.io/master/data/compatibility/supportStatus.yml")
+    }), {})
+    gateway_api = optional(object({
+      mode                 = optional(string, "enforced")
+      min_version_override = optional(string, null)
+    }), {})
+  })
+  default = {}
+
+  validation {
+    condition     = contains(["skip", "supported", "tested"], var.compatibility.kubernetes.mode)
+    error_message = "compatibility.kubernetes.mode must be one of: skip, supported, tested."
+  }
+
+  validation {
+    condition     = can(regex("^https?://", trimspace(var.compatibility.kubernetes.support_status_url)))
+    error_message = "compatibility.kubernetes.support_status_url must be a valid HTTP/HTTPS URL."
+  }
+
+  validation {
+    condition     = contains(["enforced", "skip"], var.compatibility.gateway_api.mode)
+    error_message = "compatibility.gateway_api.mode must be one of: enforced, skip."
+  }
+
+  validation {
+    condition = var.compatibility.gateway_api.min_version_override == null || can(
+      regex("^v?\\d+\\.\\d+\\.\\d+$", trimspace(var.compatibility.gateway_api.min_version_override))
+    )
+    error_message = "compatibility.gateway_api.min_version_override must be a semantic version (for example v1.4.0) when set."
+  }
 }
 
 variable "install_gateway_api_crds" {

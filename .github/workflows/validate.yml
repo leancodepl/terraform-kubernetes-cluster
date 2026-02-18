@@ -5,11 +5,13 @@ on:
     branches: [main]
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - ".github/workflows/validate.yml"
   push:
     branches: [main]
     paths:
       - "**/*.tf"
+      - "**/*.tftest.hcl"
       - ".github/workflows/validate.yml"
 
 env:
@@ -47,7 +49,9 @@ jobs:
         with:
           dir_names: true
           dir_names_max_depth: 1
-          files: "**/*.tf"
+          files: |
+            **/*.tf
+            **/*.tftest.hcl
           files_ignore: |
             .github/**
           matrix: true
@@ -83,6 +87,9 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Test
+        run: terraform test
 
       - name: Terraform Format Check
         run: terraform fmt -recursive -check -diff
