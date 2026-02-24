@@ -45,6 +45,19 @@ locals {
   datadog_config = merge(local.datadog_resources, local.datadog_features, local.datadog_aks, var.datadog_config)
 }
 
+resource "kubernetes_secret_v1" "datadog_keys" {
+  metadata {
+    name      = "datadog-keys"
+    namespace = kubernetes_namespace_v1.main.metadata[0].name
+  }
+
+  data = {
+    # Do not change, following key names are required by the Datadog Helm chart.
+    api-key = var.datadog_keys.api
+    app-key = var.datadog_keys.app
+  }
+}
+
 # See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
 resource "helm_release" "datadog_agent" {
   name       = "datadog"
@@ -54,18 +67,17 @@ resource "helm_release" "datadog_agent" {
 
   namespace = kubernetes_namespace_v1.main.metadata[0].name
 
-  set_sensitive = [
-    {
-      name  = "datadog.apiKey"
-      value = var.datadog_keys.api
-    },
-    {
-      name  = "datadog.appKey"
-      value = var.datadog_keys.app
-    }
-  ]
-
   set = concat(
+    [
+      {
+        name  = "datadog.apiKeyExistingSecret"
+        value = kubernetes_secret_v1.datadog_keys.metadata[0].name
+      },
+      {
+        name  = "datadog.appKeyExistingSecret"
+        value = kubernetes_secret_v1.datadog_keys.metadata[0].name
+      },
+    ],
     [
       for k, v in local.datadog_config : {
         name  = k
