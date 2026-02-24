@@ -84,6 +84,8 @@ resource "kubernetes_secret_v1" "external_dns_azure_config" {
 }
 
 resource "helm_release" "external_dns" {
+  count = var.manage_helm_release ? 1 : 0
+
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
