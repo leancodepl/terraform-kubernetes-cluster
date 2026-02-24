@@ -24,3 +24,23 @@ terraform import module.monitoring.kubernetes_namespace_v1.main monitoring
 | `monitoring`       | `kubernetes_namespace_v1.main`         | `monitoring`   |
 | `traefik_ingress`  | `kubernetes_namespace_v1.traefik`      | `traefik`      |
 | `cluster_domain`   | `kubernetes_namespace_v1.external_dns` | `external-dns` |
+
+## Managing helm releases
+
+`cluster_domain` now exposes Helm configuration in `output.helm` and adds `manage_helm_release` (defaults to `true`).
+
+If you want to keep managing External DNS from this module (`manage_helm_release = true`), no manual state migration is required. This release includes an internal Terraform `moved` block from `helm_release.external_dns` to `helm_release.external_dns[0]`.
+
+If you want to manage Helm release outside of this module:
+
+1. Set `manage_helm_release = false` on `module.cluster_domain`.
+2. Remove state for the old release to avoid destroy/apply conflicts (one of the addresses will exist, depending on whether state was already migrated):
+
+```bash
+terraform state rm module.cluster_domain.helm_release.external_dns
+terraform state rm module.cluster_domain.helm_release.external_dns[0]
+```
+
+3. Recreate the release in your own stack using:
+   - `module.cluster_domain.helm.values` for nested chart values.
+   - `module.cluster_domain.helm.parameters` for key/value Helm parameters.

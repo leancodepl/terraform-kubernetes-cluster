@@ -63,6 +63,15 @@ locals {
   }
 
   external_dns_values = merge(local.external_dns_config, var.config)
+
+  external_dns_release = {
+    name                  = "external-dns"
+    repository            = "https://kubernetes-sigs.github.io/external-dns/"
+    chart                 = "external-dns"
+    minimum_chart_version = var.external_dns_chart_version
+  }
+
+  external_dns_parameters = {}
 }
 
 resource "kubernetes_namespace_v1" "external_dns" {
@@ -84,10 +93,12 @@ resource "kubernetes_secret_v1" "external_dns_azure_config" {
 }
 
 resource "helm_release" "external_dns" {
-  name       = "external-dns"
-  repository = "https://kubernetes-sigs.github.io/external-dns/"
-  chart      = "external-dns"
-  version    = var.external_dns_chart_version
+  count = var.manage_helm_release ? 1 : 0
+
+  name       = local.external_dns_release.name
+  repository = local.external_dns_release.repository
+  chart      = local.external_dns_release.chart
+  version    = local.external_dns_release.minimum_chart_version
 
   namespace = kubernetes_namespace_v1.external_dns.metadata[0].name
 
