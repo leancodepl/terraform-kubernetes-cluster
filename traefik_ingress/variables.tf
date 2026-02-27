@@ -85,3 +85,12 @@ variable "ambient_mesh_enabled" {
   type        = bool
   default     = false
 }
+
+variable "caller_id_header" {
+  description = "Controls the LNCD-Caller-Id header injected by Traefik on every request."
+  type = object({
+    injection_enabled = optional(bool, true)
+    value             = optional(string, "traefik")
+  })
+  default = {}
+}

@@ -70,8 +70,14 @@ locals {
     "--certificatesresolvers.le.acme.caserver=https://acme-v02.api.letsencrypt.org/directory",
   ] : []
 
+  base_middlewares = "${kubernetes_namespace_v1.traefik.metadata[0].name}-sts-header@kubernetescrd"
+
+  entrypoint_middlewares = var.caller_id_header.injection_enabled ? (
+    "${local.base_middlewares},${kubernetes_namespace_v1.traefik.metadata[0].name}-caller-id-header@kubernetescrd"
+  ) : local.base_middlewares
+
   traefik_args = concat([
-    "--entrypoints.websecure.http.middlewares=${kubernetes_namespace_v1.traefik.metadata[0].name}-sts-header@kubernetescrd",
+    "--entrypoints.websecure.http.middlewares=${local.entrypoint_middlewares}",
     "--core.defaultRuleSyntax=${var.default_router_rule_syntax}",
   ], local.traefik_le_args, local.traefik_monitoring_args)
 }
@@ -120,6 +126,17 @@ resource "helm_release" "traefik_options" {
   name      = "traefik-options"
   namespace = kubernetes_namespace_v1.traefik.metadata[0].name
   chart     = "${path.module}/charts/traefik-options"
+
+  set = [
+    {
+      name  = "callerIdHeader.injection_enabled"
+      value = var.caller_id_header.injection_enabled
+    },
+    {
+      name  = "callerIdHeader.value"
+      value = var.caller_id_header.value
+    },
+  ]
 
   depends_on = [helm_release.traefik]
 }

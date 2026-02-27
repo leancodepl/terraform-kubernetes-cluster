@@ -1,2 +1,6 @@
 nameOverride: ""
 fullnameOverride: ""
+
+callerIdHeader:
+  injection_enabled: true
+  value: "traefik"
