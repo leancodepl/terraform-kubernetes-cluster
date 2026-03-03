@@ -42,6 +42,13 @@ locals {
 }
 
 locals {
+  traefik_release = {
+    name                  = "traefik"
+    repository            = "https://helm.traefik.io/traefik"
+    chart                 = "traefik"
+    minimum_chart_version = var.traefik_chart_version
+  }
+
   traefik_config = merge(
     local.traefik_resources,
     local.traefik_config_logging,
@@ -74,6 +81,14 @@ locals {
     "--entrypoints.websecure.http.middlewares=${kubernetes_namespace_v1.traefik.metadata[0].name}-sts-header@kubernetescrd",
     "--core.defaultRuleSyntax=${var.default_router_rule_syntax}",
   ], local.traefik_le_args, local.traefik_monitoring_args)
+
+  traefik_parameters = merge(
+    local.traefik_config,
+    {
+      for index, value in local.traefik_args :
+      "additionalArguments[${index}]" => value
+    }
+  )
 }
 
 resource "kubernetes_namespace_v1" "traefik" {
@@ -86,11 +101,13 @@ resource "kubernetes_namespace_v1" "traefik" {
 }
 
 resource "helm_release" "traefik" {
-  name = "traefik"
+  count = var.manage_helm_release ? 1 : 0
 
-  repository = "https://helm.traefik.io/traefik"
-  chart      = "traefik"
-  version    = var.traefik_chart_version
+  name = local.traefik_release.name
+
+  repository = local.traefik_release.repository
+  chart      = local.traefik_release.chart
+  version    = local.traefik_release.minimum_chart_version
 
   namespace = kubernetes_namespace_v1.traefik.metadata[0].name
 
@@ -117,6 +134,8 @@ resource "helm_release" "traefik" {
 // Helm provider does not validate the resources).
 // Provider/TF bug to track: https://github.com/hashicorp/terraform-provider-kubernetes/issues/1782
 resource "helm_release" "traefik_options" {
+  count = var.manage_helm_release ? 1 : 0
+
   name      = "traefik-options"
   namespace = kubernetes_namespace_v1.traefik.metadata[0].name
   chart     = "${path.module}/charts/traefik-options"

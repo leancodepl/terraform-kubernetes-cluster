@@ -21,6 +21,12 @@ variable "config" {
   default     = {}
 }
 
+variable "manage_helm_release" {
+  description = "Whether this module should manage the External DNS Helm release."
+  type        = bool
+  default     = true
+}
+
 variable "resources" {
   description = "The requests and limits of External DNS pod."
 
