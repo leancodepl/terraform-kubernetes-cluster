@@ -42,5 +42,5 @@ terraform state rm module.cluster_domain.helm_release.external_dns[0]
 ```
 
 3. Recreate the release in your own stack using:
-   - `module.cluster_domain.helm.values` for nested chart values.
+   - `module.cluster_domain.helm.<release>.values` as ready-to-use `values.yaml` content (YAML string).
    - `module.cluster_domain.helm.parameters` for key/value Helm parameters.
