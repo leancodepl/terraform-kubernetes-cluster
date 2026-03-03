@@ -80,6 +80,12 @@ variable "traefik_chart_version" {
   default     = "37.4.0" # pinned for backward compatibility
 }
 
+variable "manage_helm_release" {
+  description = "Whether this module should manage the Traefik Helm releases. Set to false to manage releases externally (e.g. via ArgoCD); use output.helm and output.static_manifests for the required configuration."
+  type        = bool
+  default     = true
+}
+
 variable "ambient_mesh_enabled" {
   description = "Enroll the Traefik namespace in the Istio ambient mesh for mTLS."
   type        = bool
