@@ -66,3 +66,9 @@ variable "datadog_chart_version" {
   type        = string
   default     = "3.154.1" # pinned for backward compatibility
 }
+
+variable "manage_helm_release" {
+  description = "Whether this module should manage the Datadog Helm release. Set to false to manage releases externally (e.g. via ArgoCD); use output.helm for the required configuration."
+  type        = bool
+  default     = true
+}

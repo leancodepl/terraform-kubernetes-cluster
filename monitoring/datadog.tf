@@ -58,45 +58,49 @@ resource "kubernetes_secret_v1" "datadog_keys" {
   }
 }
 
-# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
-resource "helm_release" "datadog_agent" {
-  name       = "datadog"
-  repository = "https://helm.datadoghq.com"
-  chart      = "datadog"
-  version    = var.datadog_chart_version
+locals {
+  datadog_release = {
+    name       = "datadog"
+    repository = "https://helm.datadoghq.com"
+    chart      = "datadog"
+    version    = var.datadog_chart_version
+  }
 
-  namespace = kubernetes_namespace_v1.main.metadata[0].name
-
-  set = concat(
-    [
-      {
-        name  = "datadog.apiKeyExistingSecret"
-        value = kubernetes_secret_v1.datadog_keys.metadata[0].name
-      },
-      {
-        name  = "datadog.appKeyExistingSecret"
-        value = kubernetes_secret_v1.datadog_keys.metadata[0].name
-      },
-    ],
-    [
-      for k, v in local.datadog_config : {
-        name  = k
-        value = v
-      }
-    ],
-    [
-      for k, v in local.datadog_labels : {
-        name  = "commonLabels.${k}"
-        value = v
-      }
-    ]
+  datadog_parameters = merge(
+    {
+      "datadog.apiKeyExistingSecret" = kubernetes_secret_v1.datadog_keys.metadata[0].name
+      "datadog.appKeyExistingSecret" = kubernetes_secret_v1.datadog_keys.metadata[0].name
+    },
+    local.datadog_config,
+    { for k, v in local.datadog_labels : "commonLabels.${k}" => v }
   )
 
-  values = [
+  datadog_values = [
     yamlencode({
       "datadog" = {
         "envDict" = local.datadog_env
       }
     })
   ]
+}
+
+# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
+resource "helm_release" "datadog_agent" {
+  count = var.manage_helm_release ? 1 : 0
+
+  name       = local.datadog_release.name
+  repository = local.datadog_release.repository
+  chart      = local.datadog_release.chart
+  version    = local.datadog_release.version
+
+  namespace = kubernetes_namespace_v1.main.metadata[0].name
+
+  set = [
+    for k, v in local.datadog_parameters : {
+      name  = k
+      value = v
+    }
+  ]
+
+  values = local.datadog_values
 }
