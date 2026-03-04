@@ -45,46 +45,62 @@ locals {
   datadog_config = merge(local.datadog_resources, local.datadog_features, local.datadog_aks, var.datadog_config)
 }
 
-# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
-resource "helm_release" "datadog_agent" {
-  name       = "datadog"
-  repository = "https://helm.datadoghq.com"
-  chart      = "datadog"
-  version    = var.datadog_chart_version
+resource "kubernetes_secret_v1" "datadog_keys" {
+  metadata {
+    name      = "datadog-keys"
+    namespace = kubernetes_namespace_v1.main.metadata[0].name
+  }
 
-  namespace = kubernetes_namespace_v1.main.metadata[0].name
+  data = {
+    # Do not change, following key names are required by the Datadog Helm chart.
+    api-key = var.datadog_keys.api
+    app-key = var.datadog_keys.app
+  }
+}
 
-  set_sensitive = [
+locals {
+  datadog_release = {
+    name       = "datadog"
+    repository = "https://helm.datadoghq.com"
+    chart      = "datadog"
+    version    = var.datadog_chart_version
+  }
+
+  datadog_parameters = merge(
     {
-      name  = "datadog.apiKey"
-      value = var.datadog_keys.api
+      "datadog.apiKeyExistingSecret" = kubernetes_secret_v1.datadog_keys.metadata[0].name
+      "datadog.appKeyExistingSecret" = kubernetes_secret_v1.datadog_keys.metadata[0].name
     },
-    {
-      name  = "datadog.appKey"
-      value = var.datadog_keys.app
-    }
-  ]
-
-  set = concat(
-    [
-      for k, v in local.datadog_config : {
-        name  = k
-        value = v
-      }
-    ],
-    [
-      for k, v in local.datadog_labels : {
-        name  = "commonLabels.${k}"
-        value = v
-      }
-    ]
+    local.datadog_config,
+    { for k, v in local.datadog_labels : "commonLabels.${k}" => v }
   )
 
-  values = [
+  datadog_values = [
     yamlencode({
       "datadog" = {
         "envDict" = local.datadog_env
       }
     })
   ]
+}
+
+# See: https://github.com/DataDog/helm-charts/tree/main/charts/datadog
+resource "helm_release" "datadog_agent" {
+  count = var.manage_helm_release ? 1 : 0
+
+  name       = local.datadog_release.name
+  repository = local.datadog_release.repository
+  chart      = local.datadog_release.chart
+  version    = local.datadog_release.version
+
+  namespace = kubernetes_namespace_v1.main.metadata[0].name
+
+  set = [
+    for k, v in local.datadog_parameters : {
+      name  = k
+      value = v
+    }
+  ]
+
+  values = local.datadog_values
 }
