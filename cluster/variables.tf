@@ -168,3 +168,9 @@ variable "node_resource_group" {
   default     = null
 }
 
+variable "force_upgrade_override" {
+  description = "Whether to render the upgrade_override block on the cluster. Once set to true and applied, it cannot be set back to false — the block cannot be removed from state."
+  type        = bool
+  default     = true
+}
+

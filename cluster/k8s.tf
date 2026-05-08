@@ -110,9 +110,12 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
   tags = local.tags
 
-  # Do not remove! Once set, upgrade_override block cannot be removed from state.
-  upgrade_override {
-    force_upgrade_enabled = false
+  # Once set, upgrade_override block cannot be removed from state — keep var.force_upgrade_override = true after first apply.
+  dynamic "upgrade_override" {
+    for_each = var.force_upgrade_override ? [1] : []
+    content {
+      force_upgrade_enabled = false
+    }
   }
 
   depends_on = [
