@@ -10,3 +10,10 @@ AVD-AZU-0041
 # but Kubernetes RBAC is still enabled by default. We use Entra ID groups with K8s RBAC.
 AVD-AZU-0042
 
+# MEDIUM: Cluster does not have private cluster enabled.
+# Public API endpoint is intentional for this cluster; API access is restricted separately.
+AVD-AZU-0065
+
+# LOW: Cluster does not have disk encryption set ID configured.
+# Platform-managed encryption is sufficient here; customer-managed DES is not required.
+AVD-AZU-0067
