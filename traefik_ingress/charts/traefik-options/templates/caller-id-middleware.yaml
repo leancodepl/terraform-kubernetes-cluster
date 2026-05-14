@@ -1,0 +1,10 @@
+{{- if .Values.callerIdHeader.injection_enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: caller-id-header
+spec:
+  headers:
+    customRequestHeaders:
+      LNCD-Caller-Id: {{ .Values.callerIdHeader.value | quote }}
+{{- end }}
