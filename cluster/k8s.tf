@@ -26,6 +26,8 @@ resource "azurerm_kubernetes_cluster" "cluster" {
 
     type = "VirtualMachineScaleSets"
 
+    temporary_name_for_rotation = var.default_pool.temporary_name_for_rotation
+
     upgrade_settings {
       drain_timeout_in_minutes      = 10
       node_soak_duration_in_minutes = 0
