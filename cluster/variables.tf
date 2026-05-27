@@ -75,6 +75,8 @@ variable "default_pool" {
     min_count            = optional(number),
     max_count            = optional(number),
     count                = optional(number),
+
+    temporary_name_for_rotation = optional(string),
   })
 
   validation {
